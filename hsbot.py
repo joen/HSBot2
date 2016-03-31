@@ -66,26 +66,30 @@ class MQTT():
 		pass
 
 class GUI():
+	f = tk.Tk()
+	h = f.winfo_screenheight()
+	w = f.winfo_screenwidth()
+	
+	#Fenster
+	f.title('HSBot2')
+	f.geometry(str(w)+"x"+str(h)+"+0+0")
+	f.wm_overrideredirect(True)
+	f.resizable(False, False)
+	f.config(bg="#000000")
+	
+	#Variablen
+	ts = tk.StringVar()
+	ts.set("XX:XX")
+	
+	ti = tk.StringVar()
+	ti.set("Test")
+	ci = 0
+	chat = False
+	clock = False
+	infoh = False
+	infot = False
+
 	def __init__(self):
-		f = tk.Tk()
-		h = f.winfo_screenheight()
-		w = f.winfo_screenwidth()
-		
-		#Fenster
-		f.title('HSBot2')
-		f.geometry(str(w)+"x"+str(h)+"+0+0")
-		f.wm_overrideredirect(True)
-		f.resizable(False, False)
-		f.config(bg="#000000")
-		
-		#Variablen
-		ts = tk.StringVar()
-		ts.set("XX:XX")
-		
-		ti = tk.StringVar()
-		ti.set("Test")
-		ci = 0
-		
 		#Objekte
 		chat = tk.Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=0,height=42)
 		chat.tag_add("all", "1.0", t.END)
@@ -100,21 +104,21 @@ class GUI():
 		
 		f.update_idletasks()
 	
-	def getInfo():
+	def getInfo(self):
 		while True:
-			infos =  {}
+			infos = {}
 			tmp = os.listdir(INFPATH)
 			for i in tmp:
 				if not i.startswith("."):
-					infos.append(i[:-4])
+					with open (c.INFPATH+"/"+infos[curInfo]+".txt", "r") as myfile:
+						data=myfile.readlines()
+						infos[i[:-4]] = data
 				
-			with open (c.INFPATH+"/"+infos[curInfo]+".txt", "r") as myfile:
-				data=myfile.readlines()
-			
-			text.delete("1.0",t.END)
-			text.insert(t.END, "".join(data))
-			titel.set(infos[curInfo])
-			text.update()
+			for j in infos:
+				ti.delete("1.0",tk.END)
+				ti.insert(tk.END, "".join(infos[j]))
+				titel.set(j)
+				text.update()
 			sleep(10)
 			curInfo = curInfo + 1
 		
