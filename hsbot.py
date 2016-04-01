@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import json,os,thread,sys
+from thread import start_new_thread as thread
 from subprocess import call
 from time import sleep,localtime
 from Tkinter import *
@@ -116,9 +117,7 @@ class GUI():
 		self.chat.update()
 		
 		self.f.update_idletasks()
-		self.ticktack()
 		
-	def ticktack(self):
 		while True:
 			lt = localtime()
 			self.ts.set("%02i:%02i" % (lt.tm_hour,lt.tm_min))
@@ -148,7 +147,11 @@ class GUI():
 			msg = nick+": "+msg
 		#todo
 		
-gui = GUI()
+thread(GUI,())
+		
 		
 while True:
+	print('tick')
+	sleep(1)
+	print('tack')
 	sleep(1)
