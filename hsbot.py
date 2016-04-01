@@ -100,6 +100,7 @@ class GUI():
 		clock.place(anchor=NE, width=480, height=170)
 		
 		infoh = tk.Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
+		infoh.place(anchor=NE, )
 		infot = tk.Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=0,height=32)
 		
 		f.update_idletasks()
@@ -118,7 +119,7 @@ class GUI():
 				ti.delete("1.0",tk.END)
 				ti.insert(tk.END, "".join(infos[j]))
 				titel.set(j)
-				text.update()
+				ti.update()
 			sleep(10)
 			curInfo = curInfo + 1
 		
