@@ -3,7 +3,7 @@
 import json,os,thread,sys
 from subprocess import call
 from time import sleep,localtime
-import Tkinter as tk
+from Tkinter import *
 
 import paho.mqtt.client as mossub
 import paho.mqtt.publish as mospub
@@ -40,10 +40,10 @@ def debugMsg(msg,fkt=''):
 	mospub.single(MQTTDEBU, payload=pl, hostname=MQTTSRV)
 
 def sendMsg(msg,service='',nick=''):
-	
+	pass
 
 def setTopic(tpc):
-	
+	pass
 	
 class MQTT():
 	def __init__(self):
@@ -66,7 +66,7 @@ class MQTT():
 		pass
 
 class GUI():
-	f = tk.Tk()
+	f = Tk()
 	h = f.winfo_screenheight()
 	w = f.winfo_screenwidth()
 	
@@ -78,32 +78,52 @@ class GUI():
 	f.config(bg="#000000")
 	
 	#Variablen
-	ts = tk.StringVar()
+	ts = StringVar()
 	ts.set("XX:XX")
 	
-	ti = tk.StringVar()
+	ti = StringVar()
 	ti.set("Test")
-	ci = 0
-	chat = False
-	clock = False
-	infoh = False
-	infot = False
-
+	
+	chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=16,width=36)
+	
+	clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
+	
+	infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
+	
+	infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=15,width=22)
+	
 	def __init__(self):
-		#Objekte
-		chat = tk.Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=0,height=42)
-		chat.tag_add("all", "1.0", t.END)
-		chat.tag_config("all",wrap=t.WORD)
-		chat.place()
+		# Chat
+		self.chat.tag_add("all", "1.0", END)
+		self.chat.tag_config("all",wrap=WORD)
+		self.chat.grid(row=0,column=0,rowspan=3,sticky=NW)
 		
-		clock = tk.Label(f,textvariable=ts,fg="#ffffff", bg="#000000",font=("Arial",108))
-		clock.place(anchor=NE, width=480, height=170)
+		# Clock
+		self.clock.grid(row=0,column=1,sticky=NE)
 		
-		infoh = tk.Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
-		infoh.place(anchor=NE, )
-		infot = tk.Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=0,height=32)
+		# Info Header
+		self.infoh.grid(row=1,column=1,sticky=S)
 		
-		f.update_idletasks()
+		# Info Text
+		self.infot.grid(row=2,column=1,sticky=SE)
+		self.f.rowconfigure(2, minsize=548)
+		
+		data = "Chatfenster"
+
+		self.chat.insert(END, str(data) + "\n")
+		self.chat.tag_add("all", "1.0", END)
+		self.chat.see(END)
+		self.chat.update()
+		
+		self.f.update_idletasks()
+		self.ticktack()
+		
+	def ticktack(self):
+		while True:
+			lt = localtime()
+			self.ts.set("%02i:%02i" % (lt.tm_hour,lt.tm_min))
+			self.f.update_idletasks()
+			sleep(5)
 	
 	def getInfo(self):
 		while True:
@@ -126,6 +146,9 @@ class GUI():
 	def incMsg(msg,nick=''):
 		if not nick == '':
 			msg = nick+": "+msg
-			
 		#todo
 		
+gui = GUI()
+		
+while True:
+	sleep(1)
