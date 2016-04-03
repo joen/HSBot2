@@ -123,7 +123,6 @@ chat.update()
 f.update_idletasks()
 
 def getClock():
-	#global f,ts
 	while True:
 		lt = localtime()
 		ts.set("%02i:%02i" % (lt.tm_hour,lt.tm_min))
