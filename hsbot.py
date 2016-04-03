@@ -46,6 +46,11 @@ def sendMsg(msg,service='',nick=''):
 def setTopic(tpc):
 	pass
 	
+def incMsg(msg,nick=''):
+	if not nick == '':
+		msg = nick+": "+msg
+	#todo
+	
 class MQTT():
 	def __init__(self):
 		client = mossub.Client()
@@ -66,92 +71,84 @@ class MQTT():
 	def incMsg(msg,nick=''):
 		pass
 
-class GUI():
-	f = Tk()
-	h = f.winfo_screenheight()
-	w = f.winfo_screenwidth()
-	
-	#Fenster
-	f.title('HSBot2')
-	f.geometry(str(w)+"x"+str(h)+"+0+0")
-	f.wm_overrideredirect(True)
-	f.resizable(False, False)
-	f.config(bg="#000000")
-	
-	#Variablen
-	ts = StringVar()
-	ts.set("XX:XX")
-	
-	ti = StringVar()
-	ti.set("Test")
-	
-	chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=16,width=36)
-	
-	clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
-	
-	infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
-	
-	infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=15,width=22)
-	
-	def __init__(self):
-		# Chat
-		self.chat.tag_add("all", "1.0", END)
-		self.chat.tag_config("all",wrap=WORD)
-		self.chat.grid(row=0,column=0,rowspan=3,sticky=NW)
-		
-		# Clock
-		self.clock.grid(row=0,column=1,sticky=NE)
-		
-		# Info Header
-		self.infoh.grid(row=1,column=1,sticky=S)
-		
-		# Info Text
-		self.infot.grid(row=2,column=1,sticky=SE)
-		self.f.rowconfigure(2, minsize=548)
-		
-		data = "Chatfenster"
 
-		self.chat.insert(END, str(data) + "\n")
-		self.chat.tag_add("all", "1.0", END)
-		self.chat.see(END)
-		self.chat.update()
-		
-		self.f.update_idletasks()
-		
-		while True:
-			lt = localtime()
-			self.ts.set("%02i:%02i" % (lt.tm_hour,lt.tm_min))
-			self.f.update_idletasks()
-			sleep(5)
+f = Tk()
+h = f.winfo_screenheight()
+w = f.winfo_screenwidth()/6*5
+
+#Fenster
+f.title('HSBot2')
+f.geometry(str(w)+"x"+str(h)+"+0+0")
+f.wm_overrideredirect(True)
+f.resizable(False, False)
+f.config(bg="#000000")
+
+#Variablen
+ts = StringVar()
+ts.set("XX:XX")
+
+ti = StringVar()
+ti.set("------------")
+
+chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=16,width=36)
+
+clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
+
+infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
+
+infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=15,width=22)
 	
-	def getInfo(self):
-		while True:
-			infos = {}
-			tmp = os.listdir(INFPATH)
-			for i in tmp:
-				if not i.startswith("."):
-					with open (c.INFPATH+"/"+infos[curInfo]+".txt", "r") as myfile:
-						data=myfile.readlines()
-						infos[i[:-4]] = data
-				
-			for j in infos:
-				ti.delete("1.0",tk.END)
-				ti.insert(tk.END, "".join(infos[j]))
-				titel.set(j)
-				ti.update()
-			sleep(10)
-			curInfo = curInfo + 1
-		
-	def incMsg(msg,nick=''):
-		if not nick == '':
-			msg = nick+": "+msg
-		#todo
-		
-thread(GUI,())
-		
-		
-while True:
-	print('tick')
-	sleep(1)
-	print('tack')
-	sleep(1)
+
+chat.tag_add("all", "1.0", END)
+chat.tag_config("all",wrap=WORD)
+chat.grid(row=0,column=0,rowspan=3,sticky=NW)
+
+# Clock
+clock.grid(row=0,column=1,sticky=NE)
+
+# Info Header
+infoh.grid(row=1,column=1,sticky=S)
+
+# Info Text
+infot.grid(row=2,column=1,sticky=SE)
+f.rowconfigure(2, minsize=548)
+
+data = "Chatfenster"
+
+chat.insert(END, str(data) + "\n")
+chat.tag_add("all", "1.0", END)
+chat.see(END)
+chat.update()
+
+f.update_idletasks()
+
+def getClock():
+	#global f,ts
+	while True:
+		lt = localtime()
+		ts.set("%02i:%02i" % (lt.tm_hour,lt.tm_min))
+		f.update_idletasks()
+		sleep(5)
+
+def getInfo():
+	while True:
+		infos = {}
+		tmp = os.listdir(INFPATH)
+		for i in tmp:
+			if not i.startswith(".") and i.endswith('.txt'):
+				print(i)
+				with open (INFPATH+"/"+i, "r") as myfile:
+					data=myfile.readlines()
+					infos[i[:-4]] = data
+			
+		for j in infos:
+			infot.delete("1.0",END)
+			infot.insert(END, "".join(infos[j]))
+			ti.set(j)
+			infot.update()
+			sleep(1)
+
+thread(getClock,())
+thread(getInfo,())
+
+mainloop()
