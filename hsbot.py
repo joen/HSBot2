@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import json,os,thread,sys
+import json,os,thread,sys,logging
 from thread import start_new_thread as thread
 from subprocess import call
 from time import sleep,localtime
@@ -14,32 +14,7 @@ from optparse import OptionParser
 import paho.mqtt.client as mossub
 import paho.mqtt.publish as mospub
 
-# Ports & URLs
-NODERED = "http://127.0.0.1:1880"					#wohin wird die nodered anfrage geschickt
-
-# Pfade
-INFPATH = os.path.dirname(os.path.realpath(__file__)) +"/info"		#da wo die info txt files liegen
-JCERT = os.path.dirname(os.path.realpath(__file__)) +"/xmpp.pem"	#Jabber Certificate
-
-# Jabber Daten
-JUSER = "bot@jabber.space.bi"						#bot anmeldename
-JNICK = "HSBot"								#Bot anzeigename
-JPASS = "PgDNDy70aeqU2w"						#bot Passwort
-JROOM = "bot@chat.jabber.space.bi"					#bot raum
-JDEBU = "debug@chat.jabber.space.bi"					#bot debug raum
-
-#Telegram Daten
-TOKEN = "164086266:AAGSMwxJQH2Tp1Odgeujmaaw7vPalj-noMc"			#Telegram Bot Token
-TFILE = os.path.dirname(os.path.realpath(__file__)) +"/follower"	#eingetragene follower bei telegram
-
-#MQTT Daten
-MQTTSRV = "172.23.45.55"						#mqtt server
-MQTTTOPI = "chat"							#mqtt chat topic
-MQTTDEBU = "debug"							#mqtt debug topic
-
-# GPIO Daten
-INPINS = [8,10,11,12,13,15,16,18,21,22,23,24,26]
-OUTPINS = []
+import config as c
 
 def setTopic(tpc):
 	pass
@@ -51,17 +26,21 @@ def incMsg(msg,nick=''):
 
 def debugMsg(msg,fkt=''):
 	pl = "["+str(fkt)+"]: "+str(msg)
-	mospub.single(MQTTDEBU, payload=pl, hostname=MQTTSRV)
+	mospub.single(c.MQTTDEBU, payload=pl, hostname=c.MQTTSRV)
 
 class Jabber(sleekxmpp.ClientXMPP):
+	logging.basicConfig(level=logging.ERROR)
+	XMPP_CA_CERT_FILE = c.JCERT						#Setze Certificat fuer xmpp
+
 	def __init__(self):
-		sleekxmpp.ClientXMPP.__init__(self, JUSER, JPASS)
+		sleekxmpp.ClientXMPP.__init__(self, c.JUSER, c.JPASS)
 		self.register_plugin('xep_0030') # Service Discovery
 		self.register_plugin('xep_0045') # Multi-User Chat
 		self.register_plugin('xep_0199') # XMPP Ping
 		
 		self.newSession()
 		
+	def run(self):
 		while True:
 			sleep(60)
 			self.get_roster()
@@ -75,17 +54,17 @@ class Jabber(sleekxmpp.ClientXMPP):
 			self.add_event_handler("session_start", self.start)
 			self.add_event_handler("groupchat_message", self.muc)
 			self.add_event_handler("diconnected", self.newSession)
-			self.add_event_handler("got_online", self.onOnline)
-			self.add_event_handler("got_offline", self.onOffline)
-			self.add_event_handler("groupchat_subject", self.onSubject)
+			#self.add_event_handler("got_online", self.onOnline)
+			#self.add_event_handler("got_offline", self.onOffline)
+			#self.add_event_handler("groupchat_subject", self.onSubject)
 			
 	def start(self, event):
 		self.get_roster()
 		self.send_presence()
-		self.plugin['xep_0045'].joinMUC(JROOM, JNICK,wait=True)		
+		self.plugin['xep_0045'].joinMUC(c.JROOM, c.JNICK,wait=True)		
 		
 	def onSubject(self,event):
-		if not event["muc"]["nick"] == JNICK:
+		if not event["muc"]["nick"] == c.JNICK:
 			self.changeSubj(False)
 		
 	def onOnline(self,event):
@@ -96,13 +75,13 @@ class Jabber(sleekxmpp.ClientXMPP):
 		if len(event['muc']['nick']) <25:
 			print(event['muc']['nick'] +" offline ...")
 		
-	def sendTo(self,nick,uid,text):
+	def sendTo(self,text):
 		if nick == c.JNICK:
 			txt = text
 		else:
 			txt = nick +": "+ text
 			
-		self.send_message(mto=JROOM,mbody=txt,mtype='groupchat')
+		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
@@ -123,12 +102,12 @@ class MQTT():
 		client.on_connect = self.on_connect
 		client.on_message = self.on_message
 
-		client.connect(MQTTSRV, 1883, 60)
+		client.connect(c.MQTTSRV, 1883, 60)
 		thread.start_new_thread(client.loop_forever,())
 
 	def on_connect(self,client, userdata, flags, rc):
 		print("MQTT Start: "+str(rc))
-		client.subscribe(MQTTTOP)
+		client.subscribe(c.MQTTTOP)
 
 	def on_message(self,client, userdata, msg):
 		print("MQTT Msg: "+msg.topic+" "+str(msg.payload))
@@ -263,7 +242,6 @@ class Telegram():
 			print(sys.exc_info()[0])	
 			return False
 
-
 f = Tk()
 h = f.winfo_screenheight()
 w = f.winfo_screenwidth()
@@ -302,6 +280,7 @@ clock.grid(row=0,column=1,sticky=NE)
 infoh.grid(row=1,column=1,sticky=S)
 
 # Info Text
+infot.tag_config("all",wrap=WORD)
 infot.grid(row=2,column=1,sticky=SE)
 f.rowconfigure(2, minsize=548)
 
@@ -319,27 +298,32 @@ def getClock():
 def getInfo():
 	while True:
 		infos = {}
-		tmp = os.listdir(INFPATH)
+		tmp = os.listdir(c.INFPATH)
 		for i in tmp:
 			if not i.startswith(".") and i.endswith('.txt'):
-				print(i)
-				with open (INFPATH+"/"+i, "r") as myfile:
-					data=myfile.readlines()
+				with open (c.INFPATH+"/"+i, "r") as myfile:
+					data="".join(myfile.readlines())
 					infos[i[:-4]] = data
 			
 		for j in infos:
 			infot.delete("1.0",END)
-			infot.insert(END, "".join(infos[j]))
+			#infot.tag_config("all",wrap=WORD)
+			infot.insert(END, infos[j])
+			infot.tag_add("all", "1.0", END)
 			ti.set(j)
 			infot.update()
 			sleep(10)
 
 def sendMsg(msg,service='',nick=''):
+	global jabber;
 	
-	if nick == '' or nick == JNICK:
+	if nick == '' or nick == c.JNICK:
 		data = str(msg)
 	else:
 		data = str(nick) +": "+ str(msg)
+		
+	if not service == 'jabber':
+		jabber.sendTo(data)
 		
 	chat.insert(END, data + "\n")
 	chat.tag_add("all", "1.0", END)
@@ -350,5 +334,7 @@ def sendMsg(msg,service='',nick=''):
 	
 thread(getClock,())
 thread(getInfo,())
+jabber = Jabber()
+thread(jabber.run,())
 
 mainloop()
