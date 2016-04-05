@@ -266,7 +266,7 @@ class Telegram():
 
 f = Tk()
 h = f.winfo_screenheight()
-w = f.winfo_screenwidth()/6*5
+w = f.winfo_screenwidth()
 
 #Fenster
 f.title('HSBot2')
@@ -282,13 +282,13 @@ ts.set("XX:XX")
 ti = StringVar()
 ti.set("------------")
 
-chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=16,width=36)
+chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=20,width=29)
 
 clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
 
 infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
 
-infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=15,width=22)
+infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=19,width=22)
 	
 
 chat.tag_add("all", "1.0", END)
@@ -332,7 +332,7 @@ def getInfo():
 			infot.insert(END, "".join(infos[j]))
 			ti.set(j)
 			infot.update()
-			sleep(1)
+			sleep(10)
 
 def sendMsg(msg,service='',nick=''):
 	
