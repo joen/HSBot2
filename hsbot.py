@@ -57,6 +57,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 		while not self.online: 
 			if self.connect():#use_ssl=True):
 				self.process()
+				self.online = True
 
 				self.add_event_handler("session_start", self.start)
 				self.add_event_handler("groupchat_message", self.muc)
@@ -256,62 +257,55 @@ class Befehle():
 		b = str(msg).split(" ",1)
 		b[0] = b[0].lower()
 		
-		if b[0] == ':ponies':
-			if os.path.isfile(FNAME) :
-				starttime = randint(0,38)*10
-				stoptime = starttime+10
+		# if b[0] == ':ponies':
+			# if os.path.isfile(FNAME) :
+				# starttime = randint(0,38)*10
+				# stoptime = starttime+10
 			
-				#call(['wmctrl','-k','on'])
-				call(["vlc","--no-audio","--play-and-exit","--start-time="+str(starttime),"--stop-time="+str(stoptime),"--quiet","-f",FNAME])
-				#call(['wmctrl','-k','off'])
-				#call(["vlc","--start-time 100"])
-			else:
-				m.chat("404 File nicht gefunden")
-			
-f = Tk()
-h = f.winfo_screenheight()
-w = f.winfo_screenwidth()
+				# call(["vlc","--no-audio","--play-and-exit","--start-time="+str(starttime),"--stop-time="+str(stoptime),"--quiet","-f",FNAME])
 
-#Fenster
-f.title('HSBot2')
-f.geometry(str(w)+"x"+str(h)+"+0+0")
-f.wm_overrideredirect(True)
-f.resizable(False, False)
-f.config(bg="#000000")
-
-#Variablen
-ts = StringVar()
-ts.set("XX:XX")
-
-ti = StringVar()
-ti.set("------------")
-
-chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=20,width=29)
-
-clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
-
-infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
-
-infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=19,width=22)
+			# else:
+				# m.chat("404 File nicht gefunden")
+				
+		if b[0] == ':toast':
+			thread(self.toast,(b[1],5))
+		elif b[0] == ':countdown':
+			thread(self.countdown,(b[1],))
 	
-
-chat.tag_add("all", "1.0", END)
-chat.tag_config("all",wrap=WORD)
-chat.grid(row=0,column=0,rowspan=3,sticky=NW)
-
-# Clock
-clock.grid(row=0,column=1,sticky=NE)
-
-# Info Header
-infoh.grid(row=1,column=1,sticky=S)
-
-# Info Text
-infot.tag_config("all",wrap=WORD)
-infot.grid(row=2,column=1,sticky=SE)
-f.rowconfigure(2, minsize=548)
-
-data = "Chatfenster"
-
+	def toast(self,msg,time):
+		global toast
+		global to
+		to.set(str(msg))
+		toast.grid(row=0,column=0)
+		sleep(time)
+		toast.grid_remove()
+		
+	def countdown(self,timecode):
+		time = str(timecode).split(":")
+		l = len(time)
+		m = 0
+		if(l == 3):
+			m = l[0]*3600+l[1]*60+l[2]
+		elif(l == 2):
+			m = l[0]*60+l[1]
+		elif(l == 1):
+			m = l[0]
+		
+		toast.grid_remove()
+		if m > 0:
+			toast.grid(row=0,column=0)
+			while m > 0:
+				to.set(str(m))
+				toast.grid(row=0,column=0)
+				sleep(1)
+				m=m-1
+			to.set("TIMEOUT")
+			sleep(5)
+			toast.grid_remove()
+		
+			
+			
+	
 class IOPorts():
 	def __init__(self):
 		g.setwarnings(False)
@@ -347,6 +341,55 @@ class IOPorts():
 			
 			# port 15 on
 			g.output(11,1)
+
+	
+f = Tk()
+h = f.winfo_screenheight()
+w = f.winfo_screenwidth()
+
+#Fenster
+f.title('HSBot2')
+f.geometry(str(w)+"x"+str(h)+"+0+0")
+f.wm_overrideredirect(True)
+f.resizable(False, False)
+f.config(bg="#000000")
+
+#Variablen
+ts = StringVar()
+ts.set("XX:XX")
+
+ti = StringVar()
+ti.set("------------")
+
+to = StringVar()
+to.set("TOAST")
+
+chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=20,width=29)
+
+clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
+
+infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
+
+infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=19,width=22)	
+
+toast = Label(f,textvariable=to,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
+
+chat.tag_add("all", "1.0", END)
+chat.tag_config("all",wrap=WORD)
+chat.grid(row=0,column=0,rowspan=3,sticky=NW)
+
+# Clock
+clock.grid(row=0,column=1,sticky=NE)
+
+# Info Header
+infoh.grid(row=1,column=1,sticky=S)
+
+# Info Text
+infot.tag_config("all",wrap=WORD)
+infot.grid(row=2,column=1,sticky=SE)
+f.rowconfigure(2, minsize=548)
+
+data = "Chatfenster"
 
 def getClock():
 	global ts
@@ -398,7 +441,7 @@ def sendMsg(msg,service='',nick=''):
 	chat.update()
 
 	f.update_idletasks()
-	
+		
 thread(getClock,())
 thread(getInfo,())
 jabber = Jabber()
