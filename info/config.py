@@ -14,7 +14,7 @@ JCERT = os.path.dirname(os.path.realpath(__file__)) +"/xmpp.pem"	#Jabber Certifi
 JUSER = "bot@jabber.space.bi"						#bot anmeldename
 JNICK = "HSBot"								#Bot anzeigename
 JPASS = "PgDNDy70aeqU2w"						#bot Passwort
-JROOM = "bot@chat.jabber.space.bi"					#bot raum
+JROOM = "hsb@chat.jabber.space.bi"					#bot raum
 
 #Telegram Daten
 TOKEN = "164086266:AAGSMwxJQH2Tp1Odgeujmaaw7vPalj-noMc"			#Telegram Bot Token

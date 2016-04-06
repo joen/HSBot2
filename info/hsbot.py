@@ -5,7 +5,6 @@ from thread import start_new_thread as thread
 from subprocess import call
 from time import sleep,localtime
 from Tkinter import *
-from random import randint
 
 import sleekxmpp
 
@@ -14,8 +13,6 @@ from optparse import OptionParser
 
 import paho.mqtt.client as mossub
 import paho.mqtt.publish as mospub
-
-import RPi.GPIO as g
 
 import config as c
 
@@ -78,7 +75,12 @@ class Jabber(sleekxmpp.ClientXMPP):
 		if len(event['muc']['nick']) <25:
 			print(event['muc']['nick'] +" offline ...")
 		
-	def sendTo(self,txt):
+	def sendTo(self,text):
+		if nick == c.JNICK:
+			txt = text
+		else:
+			txt = nick +": "+ text
+			
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
 		
 	def sendPrivate(self,nick,text):
@@ -240,27 +242,6 @@ class Telegram():
 			print(sys.exc_info()[0])	
 			return False
 
-class Befehle():
-	def __init__(self):
-		print "Befehle aktiviert"
-		
-	def befehl(self,nick,msg):
-		FNAME = "./cache/pony.flv"
-		b = str(msg).split(" ",1)
-		b[0] = b[0].lower()
-		
-		if b[0] == ':ponies':
-			if os.path.isfile(FNAME) :
-				starttime = randint(0,38)*10
-				stoptime = starttime+10
-			
-				#call(['wmctrl','-k','on'])
-				call(["vlc","--no-audio","--play-and-exit","--start-time="+str(starttime),"--stop-time="+str(stoptime),"--quiet","-f",FNAME])
-				#call(['wmctrl','-k','off'])
-				#call(["vlc","--start-time 100"])
-			else:
-				m.chat("404 File nicht gefunden")
-			
 f = Tk()
 h = f.winfo_screenheight()
 w = f.winfo_screenwidth()
@@ -305,41 +286,7 @@ f.rowconfigure(2, minsize=548)
 
 data = "Chatfenster"
 
-class IOPorts():
-	def __init__(self):
-		g.setwarnings(False)
-		g.setmode(g.BOARD)
 
-		g.setup(11, g.OUT) #Botlampe
-		g.setup(15, g.IN, pull_up_down=g.PUD_UP) #Botschalter Hi=off
-		
-		g.add_event_detect(15, g.BOTH, callback=self.doSpaceStatus, bouncetime=300)
-		
-	def doSpaceStatus(self,ch):
-		if g.input(15):
-			# in chat schreiben, dass spcae geschlossen
-			sendMsg("Der space ist nun geschlossen.")
-			
-			#monitor on 
-			call(["./monitor.sh","off"])
-			
-			# spacestatus close
-			call(['curl','-d status=close', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
-			
-			# port 15 off
-			g.output(11,0)
-		else:
-			# in chat schreiben, dass spcae offen
-			sendMsg("Der Space ist nun geöffnet.")
-			
-			#monitor on 
-			call(["./monitor.sh","on"])
-			
-			# spacestatus open
-			call(['curl','-d status=open', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
-			
-			# port 15 on
-			g.output(11,1)
 
 def getClock():
 	while True:
@@ -368,20 +315,15 @@ def getInfo():
 			sleep(10)
 
 def sendMsg(msg,service='',nick=''):
-	global jabber,befehle;
+	global jabber;
 	
 	if nick == '' or nick == c.JNICK:
 		data = str(msg)
 	else:
 		data = str(nick) +": "+ str(msg)
 		
-		if msg.startswith(":"):
-			befehle.befehl(nick,msg)
-		
 	if not service == 'jabber':
 		jabber.sendTo(data)
-		
-		
 		
 	chat.insert(END, data + "\n")
 	chat.tag_add("all", "1.0", END)
@@ -394,8 +336,5 @@ thread(getClock,())
 thread(getInfo,())
 jabber = Jabber()
 thread(jabber.run,())
-
-IOPorts()
-befehle = Befehle()
 
 mainloop()
