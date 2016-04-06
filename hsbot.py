@@ -248,6 +248,7 @@ class Telegram():
 			print(sys.exc_info()[0])	
 			return False
 
+# diese wartet auf Chat befehle und reagiert
 class Befehle():
 	def __init__(self):
 		print "Befehle aktiviert"
@@ -305,7 +306,7 @@ class Befehle():
 		
 			
 			
-	
+# diese klasse überwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
 	def __init__(self):
 		g.setwarnings(False)
@@ -342,7 +343,7 @@ class IOPorts():
 			# port 15 on
 			g.output(11,1)
 
-	
+# GUI anlegen
 f = Tk()
 h = f.winfo_screenheight()
 w = f.winfo_screenwidth()
@@ -354,7 +355,7 @@ f.wm_overrideredirect(True)
 f.resizable(False, False)
 f.config(bg="#000000")
 
-#Variablen
+# Label-Variablen
 ts = StringVar()
 ts.set("XX:XX")
 
@@ -364,14 +365,11 @@ ti.set("------------")
 to = StringVar()
 to.set("TOAST")
 
+#Textfelder
 chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=20,width=29)
-
 clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
-
 infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
-
 infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=19,width=22)	
-
 toast = Label(f,textvariable=to,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
 
 chat.tag_add("all", "1.0", END)
