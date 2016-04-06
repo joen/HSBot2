@@ -34,6 +34,7 @@ def debugMsg(msg,fkt=''):
 class Jabber(sleekxmpp.ClientXMPP):
 	logging.basicConfig(level=logging.ERROR)
 	XMPP_CA_CERT_FILE = c.JCERT						#Setze Certificat fuer xmpp
+	online = False
 
 	def __init__(self):
 		sleekxmpp.ClientXMPP.__init__(self, c.JUSER, c.JPASS)
@@ -41,26 +42,32 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.register_plugin('xep_0045') # Multi-User Chat
 		self.register_plugin('xep_0199') # XMPP Ping
 		
-		self.newSession()
 		
 	def run(self):
+		self.newSession()
 		while True:
 			sleep(60)
 			self.get_roster()
 			self.send_presence()
 				
 	def newSession(self):
+		self.online = False
 		#print(str(localtime())+": session")
-		if self.connect():#use_ssl=True):
-			self.process()
+		
+		while not self.online: 
+			if self.connect():#use_ssl=True):
+				self.process()
 
-			self.add_event_handler("session_start", self.start)
-			self.add_event_handler("groupchat_message", self.muc)
-			self.add_event_handler("diconnected", self.newSession)
-			#self.add_event_handler("got_online", self.onOnline)
-			#self.add_event_handler("got_offline", self.onOffline)
-			#self.add_event_handler("groupchat_subject", self.onSubject)
-			
+				self.add_event_handler("session_start", self.start)
+				self.add_event_handler("groupchat_message", self.muc)
+				self.add_event_handler("diconnected", self.newSession)
+				#self.add_event_handler("got_online", self.onOnline)
+				#self.add_event_handler("got_offline", self.onOffline)
+				#self.add_event_handler("groupchat_subject", self.onSubject)
+			else:
+				print('Verbindung fehlgeschlagen ... (warte 60 Sekunden)')
+				sleep(60)
+				
 	def start(self, event):
 		self.get_roster()
 		self.send_presence()
@@ -342,13 +349,16 @@ class IOPorts():
 			g.output(11,1)
 
 def getClock():
+	global ts
 	while True:
 		lt = localtime()
 		ts.set("%02i:%02i" % (lt.tm_hour,lt.tm_min))
-		f.update_idletasks()
+		#f.update_idletasks()
 		sleep(5)
 
 def getInfo():
+	global infot 
+	global infoh
 	while True:
 		infos = {}
 		tmp = os.listdir(c.INFPATH)
@@ -360,7 +370,6 @@ def getInfo():
 			
 		for j in infos:
 			infot.delete("1.0",END)
-			#infot.tag_config("all",wrap=WORD)
 			infot.insert(END, infos[j])
 			infot.tag_add("all", "1.0", END)
 			ti.set(j)
