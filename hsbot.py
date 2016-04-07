@@ -47,8 +47,17 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.newSession()
 		while True:
 			sleep(60)
-			self.get_roster()
-			self.send_presence()
+			try:
+				rtt = self['xep_0199'].send_ping(c.JUSER,timeout=0.01,errorfalse=True)
+				#print(rtt)
+				#print("------------------")
+				if not rtt:
+					self.newSession()
+				else:
+					self.get_roster()
+					self.send_presence()
+			except:
+				self.newSession()
 				
 	def newSession(self):
 		self.online = False
@@ -87,7 +96,8 @@ class Jabber(sleekxmpp.ClientXMPP):
 			print(event['muc']['nick'] +" offline ...")
 		
 	def sendTo(self,txt):
-		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
+		print(txt)
+		print(self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat'))
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
@@ -331,17 +341,67 @@ class IOPorts():
 			# port 15 off
 			g.output(11,0)
 		else:
-			# in chat schreiben, dass spcae offen
-			sendMsg("Der Space ist nun geöffnet.")
-			
 			#monitor on 
 			call(["./monitor.sh","on"])
+			# etwas show
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
+			g.output(11,1)
+			sleep(0.1)
+			g.output(11,0)
+			sleep(0.1)
 			
 			# spacestatus open
 			call(['curl','-d status=open', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
 			
-			# port 15 on
+			# port 11 on
 			g.output(11,1)
+			
+			sleep(5)
+			# in chat schreiben, dass space offen
+			sendMsg("Der Space ist nun geöffnet.")
 
 # GUI anlegen
 f = Tk()
