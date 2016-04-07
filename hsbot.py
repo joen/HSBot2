@@ -129,10 +129,15 @@ class MQTT():
 	def on_connect(self,client, userdata, flags, rc):
 		print("MQTT Start: "+str(rc))
 		self.client.subscribe(c.MQTTTOPI)
+		self.client.subscribe(c.MQTTTOPT)
 
 	def on_message(self,client, userdata, msg):
 		print("MQTT Msg: "+msg.topic+" "+str(msg.payload))
-		sendMsg(str(msg.payload),'mqtt',"[MQTT]")
+		if(msg.topic == 'toast'):
+			befehle.toast(msg.payload,5)
+		
+		if(msg.topic == 'chat'):
+			sendMsg(str(msg.payload),'mqtt',"[MQTT]")
 		
 	def incMsg(msg,nick=''):
 		pass
@@ -291,6 +296,8 @@ class Befehle():
 	def toast(self,msg,time):
 		global toast
 		global to
+		
+		mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
 		to.set(str(msg))
 		toast.grid(row=0,column=0)
 		sleep(time)
