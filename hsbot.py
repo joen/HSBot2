@@ -113,17 +113,22 @@ class Jabber(sleekxmpp.ClientXMPP):
 			sendMsg(msg['body'],'jabber',msg['mucnick'])
 	
 class MQTT():
+	client = mossub.Client()
+	
 	def __init__(self):
-		client = mossub.Client()
-		client.on_connect = self.on_connect
-		client.on_message = self.on_message
+		self.client = mossub.Client()
+		self.client.on_connect = self.on_connect
+		self.client.on_message = self.on_message
 
-		client.connect(c.MQTTSRV, 1883, 60)
-		thread.start_new_thread(client.loop_forever,())
+		self.client.connect(c.MQTTSRV, 1883, 60)
+		
+	def run(self):
+		while True:
+			self.client.loop_forever()
 
 	def on_connect(self,client, userdata, flags, rc):
 		print("MQTT Start: "+str(rc))
-		client.subscribe(c.MQTTTOP)
+		self.client.subscribe(c.MQTTTOPI)
 
 	def on_message(self,client, userdata, msg):
 		print("MQTT Msg: "+msg.topic+" "+str(msg.payload))
@@ -504,6 +509,8 @@ thread(getClock,())
 thread(getInfo,())
 jabber = Jabber()
 thread(jabber.run,())
+mqtt = MQTT()
+thread(mqtt.run,())
 
 IOPorts()
 befehle = Befehle()
