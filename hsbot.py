@@ -47,17 +47,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.newSession()
 		while True:
 			sleep(60)
-			try:
-				rtt = self['xep_0199'].send_ping(c.JUSER,timeout=0.01,errorfalse=True)
-				#print(rtt)
-				#print("------------------")
-				if not rtt:
-					self.newSession()
-				else:
-					self.get_roster()
-					self.send_presence()
-			except:
-				self.newSession()
+			self.send_presence()
 				
 	def newSession(self):
 		self.online = False
@@ -96,8 +86,9 @@ class Jabber(sleekxmpp.ClientXMPP):
 			print(event['muc']['nick'] +" offline ...")
 		
 	def sendTo(self,txt):
-		print(txt)
-		print(self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat'))
+		print("[XMPP] "+str(txt))
+		#self.send_presence()
+		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
@@ -134,7 +125,7 @@ class MQTT():
 	def on_message(self,client, userdata, msg):
 		print("MQTT Msg: "+msg.topic+" "+str(msg.payload))
 		if(msg.topic == 'toast'):
-			befehle.toast(msg.payload,5)
+			befehle.toast(msg.payload,10)
 		
 		if(msg.topic == 'chat'):
 			sendMsg(str(msg.payload),'mqtt',"[MQTT]")
@@ -289,7 +280,7 @@ class Befehle():
 				# m.chat("404 File nicht gefunden")
 				
 		if b[0] == ':toast':
-			thread(self.toast,(b[1],5))
+			thread(self.toast,(b[1],10))
 		elif b[0] == ':countdown':
 			thread(self.countdown,(b[1],))
 	
@@ -442,7 +433,7 @@ chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=20,width=2
 clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
 infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
 infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=19,width=22)	
-toast = Label(f,textvariable=to,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
+toast = Label(f,textvariable=to,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=8)
 
 chat.tag_add("all", "1.0", END)
 chat.tag_config("all",wrap=WORD)
