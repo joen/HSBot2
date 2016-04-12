@@ -2,12 +2,42 @@
 # -*- coding: utf-8 -*-
 
 from time import localtime,time
+import urllib3
 import config as c
 
 #callback func für sorter
 def timer(inp):
 	return inp[0]*10000+inp[1]*100+inp[2]
 
+# holt termine vom wordpress
+def wordpress():
+	ret = list()
+	http = urllib3.PoolManager()
+	r = http.request('GET', 'http://hackerspace-bielefeld.de/')
+	if r.status == 200:
+		data = r.data.split("\n")
+		s = 0
+		for d in data:
+			d = d.strip()
+			if s == 1 and d == "<hr>":
+				break
+			
+			if s == 1 and d.startswith('<h3 class="entry-title">'):
+				i_start = d.find(">",25)+1
+				i_stop = d.find("<",i_start)
+				j_start = d.find(">",i_stop)+1
+				j_stop = d.find("<",j_start)
+				i = d[i_start:i_stop]
+				j = d[j_start:j_stop].split(', ')
+				time = j[0].split(".")
+				ret.append([int(time[2]),int(time[1]),int(time[0]),i+" "+j[1]])
+			
+			if s == 0 and d == "<h2>Anstehende Veranstaltungen</h2>":
+				s=1
+		return ret
+	else:
+		print("FEHLER")	
+	
 #list den abfall kalender
 def abfall():
 	with open (c.CACPATH+"/abfall.ics", "r") as myfile:
@@ -30,6 +60,7 @@ def abfall():
 				i=i+1
 		return r
 		
+
 #termin liste
 termine = list()
 gesiebt = list()
@@ -37,7 +68,8 @@ sortiert = list()
 		
 #termine einlesen
 termine.extend(abfall())
-
+termine.extend(wordpress())
+#print(termine)
 now = localtime()
 soon = localtime(time()+60*60*24*7)
 #print(now)

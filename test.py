@@ -23,10 +23,7 @@ def website():
 				i = d[i_start:i_stop]
 				j = d[j_start:j_stop].split(', ')
 				time = j[0].split(".")
-				ret.append(time[2],time[1],time[0],i+" "+j[1])
-				
-				print (d[i_start:i_stop])
-				#print (d)
+				ret.append([time[2],time[1],time[0],i+" "+j[1]])
 			
 			if s == 0 and d == "<h2>Anstehende Veranstaltungen</h2>":
 				s=1
@@ -34,4 +31,4 @@ def website():
 	else:
 		print("FEHLER")
 		
-website()
+print(website())
