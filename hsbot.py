@@ -39,7 +39,7 @@ def debugMsg(msg,fkt=''):
 
 class Jabber(sleekxmpp.ClientXMPP):
 	logging.basicConfig(level=logging.ERROR)
-	XMPP_CA_CERT_FILE = c.JCERT						#Setze Certificat fuer xmpp
+	XMPP_CA_CERT_FILE = c.JCERT		#Setze Certificat fuer xmpp
 	online = False
 
 	def __init__(self):
@@ -48,22 +48,13 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.register_plugin('xep_0045') # Multi-User Chat
 		self.register_plugin('xep_0199') # XMPP Ping
 		
-		
 	def run(self):
-		self.newSession()
 		while True:
-			if not isup("8.8.8.8"):
-				self.disconnect()
-				sleep(1)
-				self.newSession()
-			else:
-				sleep(60)
-				self.send_presence()
+			sleep(60)
+			self.send_presence()
 				
-	def newSession(self):
+	def onDisc(self):
 		self.online = False
-		#print(str(localtime())+": session")
-		
 		while not self.online: 
 			if self.connect():#use_ssl=True):
 				self.process()
@@ -73,12 +64,10 @@ class Jabber(sleekxmpp.ClientXMPP):
 				else:
 					g.output(11,1)
 					
-				self.add_event_handler("session_start", self.start)
-				self.add_event_handler("groupchat_message", self.muc)
-				self.add_event_handler("diconnected", self.newSession)
-				#self.add_event_handler("got_online", self.onOnline)
-				#self.add_event_handler("got_offline", self.onOffline)
-				#self.add_event_handler("groupchat_subject", self.onSubject)
+				self.add_event_handler("session_start", self.onStart)
+				self.add_event_handler("groupchat_message", self.onMuc)
+				self.add_event_handler("diconnected", self.onDisc)
+				self.add_event_handler("groupchat_subject", self.onSubj)
 			else:
 				print('Verbindung fehlgeschlagen ... (warte 60 Sekunden)')
 				for i in range(60):
@@ -87,40 +76,27 @@ class Jabber(sleekxmpp.ClientXMPP):
 					g.output(11,0)
 					sleep(1)
 				
-	def start(self, event):
+	def onStart(self, event):
 		self.get_roster()
 		self.send_presence()
 		self.plugin['xep_0045'].joinMUC(c.JROOM, c.JNICK,wait=True)		
 		
-	def onSubject(self,event):
+	def onSubj(self,event):
 		if not event["muc"]["nick"] == c.JNICK:
 			self.changeSubj(False)
 		
-	def onOnline(self,event):
-		if len(event['muc']['nick']) <25:
-			print(event['muc']['nick'] +" online ...")
-		
-	def onOffline(self,event):
-		if len(event['muc']['nick']) <25:
-			print(event['muc']['nick'] +" offline ...")
+	def onMuc(self, msg):
+		if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
+			sendMsg(msg['body'],'jabber',msg['mucnick'])
 		
 	def sendTo(self,txt):
-		print("[XMPP] "+str(txt))
-		#self.send_presence()
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
-		
-	def sendPrivate(self,nick,text):
-		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
 		
 	def changeSubj(self,subj):
 		if subj:
 			self.TOPIC = str(subj)
 
 		self.send_raw("<message from='"+c.JROOM+"/"+c.JNICK+"' id='lh2bs617' to='"+c.JROOM+"' type='groupchat'><subject>"+self.TOPIC+"</subject></message>")
-		
-	def muc(self, msg):
-		if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
-			sendMsg(msg['body'],'jabber',msg['mucnick'])
 	
 class MQTT():
 	client = mossub.Client()
