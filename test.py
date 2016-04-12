@@ -20,11 +20,17 @@ def website():
 				i_stop = d.find("<",i_start)
 				j_start = d.find(">",i_stop)
 				j_stop = d.find("<",j_start)
+				i = d[i_start:i_stop]
+				j = d[j_start:j_stop].split(', ')
+				time = j[0].split(".")
+				ret.append(time[2],time[1],time[0],i+" "+j[1])
+				
 				print (d[i_start:i_stop])
 				#print (d)
 			
 			if s == 0 and d == "<h2>Anstehende Veranstaltungen</h2>":
 				s=1
+		return ret
 	else:
 		print("FEHLER")
 		
