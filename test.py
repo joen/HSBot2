@@ -21,7 +21,7 @@ def website():
 				j_start = d.find(">",i_stop)
 				j_stop = d.find("<",j_start)
 				print (d[i_start:i_stop])
-				print (d)
+				#print (d)
 			
 			if s == 0 and d == "<h2>Anstehende Veranstaltungen</h2>":
 				s=1
