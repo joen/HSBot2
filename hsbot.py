@@ -3,7 +3,7 @@
 import json,os,thread,sys,logging
 from thread import start_new_thread as thread
 from subprocess import call
-from time import sleep,localtime
+from time import sleep,localtime,time
 from Tkinter import *
 from random import randint
 
@@ -18,6 +18,12 @@ import paho.mqtt.publish as mospub
 import RPi.GPIO as g
 
 import config as c
+
+lastStatusCh = 0 # wann das letzte mal der space status geändert wurde
+
+#gpio einstellungen
+g.setwarnings(False)
+g.setmode(g.BOARD)
 
 def setTopic(tpc):
 	pass
@@ -46,8 +52,13 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def run(self):
 		self.newSession()
 		while True:
-			sleep(60)
-			self.send_presence()
+			if not isup("8.8.8.8"):
+				self.disconnect()
+				sleep(1)
+				self.newSession()
+			else:
+				sleep(60)
+				self.send_presence()
 				
 	def newSession(self):
 		self.online = False
@@ -57,7 +68,11 @@ class Jabber(sleekxmpp.ClientXMPP):
 			if self.connect():#use_ssl=True):
 				self.process()
 				self.online = True
-
+				if g.input(15):
+					g.output(11,0)
+				else:
+					g.output(11,1)
+					
 				self.add_event_handler("session_start", self.start)
 				self.add_event_handler("groupchat_message", self.muc)
 				self.add_event_handler("diconnected", self.newSession)
@@ -66,7 +81,11 @@ class Jabber(sleekxmpp.ClientXMPP):
 				#self.add_event_handler("groupchat_subject", self.onSubject)
 			else:
 				print('Verbindung fehlgeschlagen ... (warte 60 Sekunden)')
-				sleep(60)
+				for i in range(60):
+					g.output(11,1)
+					sleep(1)
+					g.output(11,0)
+					sleep(1)
 				
 	def start(self, event):
 		self.get_roster()
@@ -316,15 +335,10 @@ class Befehle():
 			to.set("TIMEOUT")
 			sleep(5)
 			toast.grid_remove()
-		
-			
-			
+				
 # diese klasse überwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
 	def __init__(self):
-		g.setwarnings(False)
-		g.setmode(g.BOARD)
-
 		g.setup(11, g.OUT) #Botlampe
 		g.setup(15, g.IN, pull_up_down=g.PUD_UP) #Botschalter Hi=off
 		
@@ -502,6 +516,11 @@ def sendMsg(msg,service='',nick=''):
 	chat.update()
 
 	f.update_idletasks()
+	
+def isup(hostname):
+	if os.system("ping -c 1 " + hostname) == 0:
+		return True;
+	return False
 		
 thread(getClock,())
 thread(getInfo,())
@@ -512,5 +531,7 @@ thread(mqtt.run,())
 
 IOPorts()
 befehle = Befehle()
+
+
 
 mainloop()

@@ -1,7 +1,5 @@
-=== 7.4. ===
-Abfall: Bioabfallbehaelter
-Abfall: Wertstofftonne
 === 13.4. ===
 Abfall: Restabfallbehaelter
 === 14.4. ===
 Abfall: Papierbehaelter
+Plenum 20:00-21:00
