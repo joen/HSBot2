@@ -39,10 +39,11 @@ def debugMsg(msg,fkt=''):
 
 class Jabber(sleekxmpp.ClientXMPP):
 	logging.basicConfig(level=logging.ERROR)
-	XMPP_CA_CERT_FILE = c.JCERT						#Setze Certificat fuer xmpp
-	online = False
+	XMPP_CA_CERT_FILE = c.JCERT		#Setze Certificat fuer xmpp
+	online = time()
 
 	def __init__(self):
+		print("[init]")
 		sleekxmpp.ClientXMPP.__init__(self, c.JUSER, c.JPASS)
 		self.register_plugin('xep_0030') # Service Discovery
 		self.register_plugin('xep_0045') # Multi-User Chat
@@ -52,47 +53,51 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def run(self):
 		self.newSession()
 		while True:
-			if not isup("8.8.8.8"):
+			print("[run] "+ str(self.online))
+			if (self.online + 65) < time():
 				self.disconnect()
-				sleep(1)
+				sleep(5)
 				self.newSession()
 			else:
-				sleep(60)
+				sleep(30)
 				self.send_presence()
 				
-	def newSession(self):
-		self.online = False
-		#print(str(localtime())+": session")
-		
-		while not self.online: 
-			if self.connect():#use_ssl=True):
-				self.process()
-				self.online = True
-				if g.input(15):
-					g.output(11,0)
-				else:
-					g.output(11,1)
-					
-				self.add_event_handler("session_start", self.start)
-				self.add_event_handler("groupchat_message", self.muc)
-				self.add_event_handler("diconnected", self.newSession)
-				#self.add_event_handler("got_online", self.onOnline)
-				#self.add_event_handler("got_offline", self.onOffline)
-				#self.add_event_handler("groupchat_subject", self.onSubject)
+	def newSession(self): 
+		if self.connect():#use_ssl=True):
+			self.process()
+			self.online = time()
+			if g.input(15):
+				g.output(11,0)
 			else:
-				print('Verbindung fehlgeschlagen ... (warte 60 Sekunden)')
-				for i in range(60):
-					g.output(11,1)
-					sleep(1)
-					g.output(11,0)
-					sleep(1)
+				g.output(11,1)
 				
-	def start(self, event):
+			self.add_event_handler("session_start", self.onStart)
+			self.add_event_handler("groupchat_message", self.muc)
+			self.add_event_handler("diconnected", self.newSession)
+			#self.add_event_handler("groupchat_subject", self.onSubj)
+			self.add_event_handler("presence_available",self.onPresence)
+		
+		else:
+			print('Verbindung fehlgeschlagen ... (warte 10 Sekunden)')
+			for i in range(10):
+				g.output(11,1)
+				sleep(1)
+				g.output(11,0)
+				sleep(1)
+				
+	def onStart(self, event):
+		print('[start]')
 		self.get_roster()
 		self.send_presence()
 		self.plugin['xep_0045'].joinMUC(c.JROOM, c.JNICK,wait=True)		
 		
-	def onSubject(self,event):
+	def onPresence(self,event):
+		print('[presence]'+str(event['from'].bare))
+		if event['from'].bare == c.JUSER:
+			print('[timeup]'+ str(time()))
+			self.online = time()
+		
+	def onSubj(self,event):
 		if not event["muc"]["nick"] == c.JNICK:
 			self.changeSubj(False)
 		
@@ -106,7 +111,6 @@ class Jabber(sleekxmpp.ClientXMPP):
 		
 	def sendTo(self,txt):
 		print("[XMPP] "+str(txt))
-		#self.send_presence()
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
 		
 	def sendPrivate(self,nick,text):

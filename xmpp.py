@@ -1,15 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sleekxmpp
-from time import sleep
+import sleekxmpp,logging
+from time import sleep,time
 
-import demo as c
+import config as c
 
 class Jabber(sleekxmpp.ClientXMPP):
 	logging.basicConfig(level=logging.ERROR)
 	XMPP_CA_CERT_FILE = c.JCERT		#Setze Certificat fuer xmpp
-	online = False
+	online = time()
 
 	def __init__(self):
 		print("[init]")
@@ -19,10 +19,14 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.register_plugin('xep_0199') # XMPP Ping
 		
 	def run(self):
+		self.onDisc()
 		while True:
-			print("[run]")
-			sleep(60)
-			self.send_presence()
+			print("[run] "+ str(self.online))
+			if (self.online + 65) < time():
+				self.onDisc()
+			else:
+				sleep(30)
+				self.send_presence()
 				
 	def onDisc(self):
 		print("[disconnect]")
@@ -30,24 +34,23 @@ class Jabber(sleekxmpp.ClientXMPP):
 		while not self.online: 
 			if self.connect():#use_ssl=True):
 				self.process()
-				self.online = True
-				if g.input(15):
-					g.output(11,0)
-				else:
-					g.output(11,1)
+				self.online = time()
 					
 				self.add_event_handler("session_start", self.onStart)
 				self.add_event_handler("groupchat_message", self.onMuc)
 				self.add_event_handler("diconnected", self.onDisc)
 				self.add_event_handler("groupchat_subject", self.onSubj)
+				self.add_event_handler("presence_available",self.onPresence)
 			else:
-				print('Verbindung fehlgeschlagen ... (warte 60 Sekunden)')
-				for i in range(60):
-					g.output(11,1)
-					sleep(1)
-					g.output(11,0)
-					sleep(1)
+				print('Verbindung fehlgeschlagen ... (warte 10 Sekunden)')
+			sleep(10)
 				
+	def onPresence(self,event):
+		print('[presence]'+str(event['from'].bare))
+		if event['from'].bare == c.JUSER:
+			print('[timeup]'+ str(time()))
+			self.online = time()
+
 	def onStart(self, event):
 		print("[start]")
 		self.get_roster()
@@ -58,7 +61,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 		print("[subj]")
 		
 	def onMuc(self, msg):
-		print("[init]"+ msg['mucnick'] +":"+ msg['body'])
+		print("[muc]"+ msg['mucnick'] +":"+ msg['body'])
 
 		
 	def sendTo(self,txt):
@@ -70,3 +73,5 @@ class Jabber(sleekxmpp.ClientXMPP):
 
 		self.send_raw("<message from='"+c.JROOM+"/"+c.JNICK+"' id='lh2bs617' to='"+c.JROOM+"' type='groupchat'><subject>"+self.TOPIC+"</subject></message>")
 	
+jabber = Jabber()
+jabber.run()
