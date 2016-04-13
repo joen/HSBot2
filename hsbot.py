@@ -101,14 +101,6 @@ class Jabber(sleekxmpp.ClientXMPP):
 		if not event["muc"]["nick"] == c.JNICK:
 			self.changeSubj(False)
 		
-	def onOnline(self,event):
-		if len(event['muc']['nick']) <25:
-			print(event['muc']['nick'] +" online ...")
-		
-	def onOffline(self,event):
-		if len(event['muc']['nick']) <25:
-			print(event['muc']['nick'] +" offline ...")
-		
 	def sendTo(self,txt):
 		print("[XMPP] "+str(txt))
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')

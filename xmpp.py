@@ -12,7 +12,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 	online = time()
 
 	def __init__(self):
-		print("[init]")
+		#print("[init]")
 		sleekxmpp.ClientXMPP.__init__(self, c.JUSER, c.JPASS)
 		self.register_plugin('xep_0030') # Service Discovery
 		self.register_plugin('xep_0045') # Multi-User Chat
@@ -30,7 +30,6 @@ class Jabber(sleekxmpp.ClientXMPP):
 				
 	def onDisc(self):
 		print("[disconnect]")
-		self.online = False
 		while not self.online: 
 			if self.connect():#use_ssl=True):
 				self.process()
