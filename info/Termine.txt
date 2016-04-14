@@ -1,5 +1,7 @@
-=== 13.4. ===
-Abfall: Restabfallbehaelter
 === 14.4. ===
 Abfall: Papierbehaelter
 Plenum 20:00-21:00
+=== 16.4. ===
+Hackafé 16:00-23:00
+=== 21.4. ===
+Abfall: Bioabfallbehaelter

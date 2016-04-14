@@ -8,11 +8,6 @@ from Tkinter import *
 from random import randint
 
 import sleekxmpp
-from sleekxmpp.basexmpp import BaseXMPP
-from sleekxmpp.exceptions import XMPPError
-from sleekxmpp.xmlstream import XMLStream
-from sleekxmpp.xmlstream.matcher import StanzaPath, MatchXPath
-from sleekxmpp.xmlstream.handler import Callback
 
 from telegram import Updater,Bot
 from optparse import OptionParser
