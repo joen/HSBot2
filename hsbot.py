@@ -8,6 +8,11 @@ from Tkinter import *
 from random import randint
 
 import sleekxmpp
+from sleekxmpp.basexmpp import BaseXMPP
+from sleekxmpp.exceptions import XMPPError
+from sleekxmpp.xmlstream import XMLStream
+from sleekxmpp.xmlstream.matcher import StanzaPath, MatchXPath
+from sleekxmpp.xmlstream.handler import Callback
 
 from telegram import Updater,Bot
 from optparse import OptionParser
@@ -38,7 +43,7 @@ def debugMsg(msg,fkt=''):
 	mospub.single(c.MQTTDEBU, payload=pl, hostname=c.MQTTSRV)
 
 class Jabber(sleekxmpp.ClientXMPP):
-	logging.basicConfig(level=logging.ERROR)
+	logging.basicConfig(level=logging.DEBUG)
 	XMPP_CA_CERT_FILE = c.JCERT		#Setze Certificat fuer xmpp
 	online = time()
 
@@ -49,41 +54,39 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.register_plugin('xep_0045') # Multi-User Chat
 		self.register_plugin('xep_0199') # XMPP Ping
 		
-		
 	def run(self):
 		self.newSession()
 		while True:
 			print("[run] "+ str(self.online))
 			if (self.online + 65) < time():
-				self.disconnect()
-				sleep(5)
+				#self.disconnect()
+				#sleep(5)
 				self.newSession()
 			else:
 				sleep(30)
 				self.send_presence()
+				io.blink_start(2,0.5)
 				
 	def newSession(self): 
-		if self.connect():#use_ssl=True):
-			self.process()
-			self.online = time()
-			if g.input(15):
-				g.output(11,0)
-			else:
-				g.output(11,1)
-				
-			self.add_event_handler("session_start", self.onStart)
-			self.add_event_handler("groupchat_message", self.muc)
-			self.add_event_handler("diconnected", self.newSession)
-			#self.add_event_handler("groupchat_subject", self.onSubj)
-			self.add_event_handler("presence_available",self.onPresence)
-		
+		while not self.connect():
+			sleep(0.1)
+		print('[newSession] 1')
+		self.process()
+		print('[newSession] 2')
+		self.online = time()
+		print('[newSession] 3')
+		if g.input(15):
+			print('[newSession] 4')
+			g.output(11,0)
 		else:
-			print('Verbindung fehlgeschlagen ... (warte 10 Sekunden)')
-			for i in range(10):
-				g.output(11,1)
-				sleep(1)
-				g.output(11,0)
-				sleep(1)
+			print('[newSession] 5')
+			g.output(11,1)
+			
+		self.add_event_handler("session_start", self.onStart)
+		self.add_event_handler("groupchat_message", self.muc)
+		self.add_event_handler("diconnected", self.newSession)
+		#self.add_event_handler("groupchat_subject", self.onSubj)
+		self.add_event_handler("presence_available",self.onPresence)
 				
 	def onStart(self, event):
 		print('[start]')
@@ -94,6 +97,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def onPresence(self,event):
 		print('[presence]'+str(event['from'].bare))
 		if event['from'].bare == c.JUSER:
+			io.blink_stop()
 			print('[timeup]'+ str(time()))
 			self.online = time()
 		
@@ -334,17 +338,36 @@ class Befehle():
 				
 # diese klasse überwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
+	blinking = False
+
 	def __init__(self):
 		g.setup(11, g.OUT) #Botlampe
 		g.setup(15, g.IN, pull_up_down=g.PUD_UP) #Botschalter Hi=off
 		
 		g.add_event_detect(15, g.BOTH, callback=self.doSpaceStatus, bouncetime=300)
+	
+	def blinking(self,interval,ratio):
+		while self.blinking:
+			a = interval*ratio
+			b = interval-a
+			g.output(11,1)
+			sleep(a)
+			g.output(11,0)
+			sleep(b)
 		
+	def blink_start(self,interval,ratio=0.5):
+		self.blinking = True
+		thread(self.blinking,(interval,ratio))
+
+	def blink_stop(self):
+		self.blinking = False
+	
+	
 	def doSpaceStatus(self,ch):
 		if g.input(15):
 			# in chat schreiben, dass spcae geschlossen
-			sendMsg("Der space ist nun geschlossen.")
-			
+			#sendMsg("Der space ist nun geschlossen.")
+			sleep(5)
 			#monitor on 
 			call(["./monitor.sh","off"])
 			
@@ -357,6 +380,7 @@ class IOPorts():
 			#monitor on 
 			call(["./monitor.sh","on"])
 			# etwas show
+			#jabber.disconnect()
 			g.output(11,1)
 			sleep(0.1)
 			g.output(11,0)
@@ -406,6 +430,8 @@ class IOPorts():
 			g.output(11,0)
 			sleep(0.1)
 			
+			
+			jabber.newSession()
 			# spacestatus open
 			call(['curl','-d status=open', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
 			
@@ -414,7 +440,7 @@ class IOPorts():
 			
 			sleep(5)
 			# in chat schreiben, dass space offen
-			sendMsg("Der Space ist nun geöffnet.")
+			#sendMsg("Der Space ist nun geöffnet.")
 
 # GUI anlegen
 f = Tk()
@@ -520,12 +546,12 @@ def isup(hostname):
 		
 thread(getClock,())
 thread(getInfo,())
-jabber = Jabber()
-thread(jabber.run,())
+#jabber = Jabber()
+#thread(jabber.run,())
 mqtt = MQTT()
 thread(mqtt.run,())
 
-IOPorts()
+io = IOPorts()
 befehle = Befehle()
 
 
