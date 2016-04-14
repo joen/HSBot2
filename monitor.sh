@@ -15,6 +15,7 @@ if [ $1 = "off" ]; then
 	xset dpms force off
 	/opt/vc/bin/tvservice -o
 elif [ $1 = "on" ]; then
+	/opt/vc/bin/tvservice -o
 	/opt/vc/bin/tvservice -p
 	xset dpms force on
 else
