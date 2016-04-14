@@ -19,21 +19,28 @@ def wordpress():
 		s = 0
 		for d in data:
 			d = d.strip()
-			if s == 1 and d == "<hr>":
-				break
+			ee = d.split('</h3><h3 class="entry-title">')
+			# print(ee)
+			# print("---------------------------------------------------")
+			if s == 2: 
+				for e in ee:
+					print ("- "+e)
+					i_start = e.find(">",25)+1
+					i_stop = e.find("<",i_start)
+					j_start = e.find(">",i_stop)+1
+					j_stop = e.find("<",j_start)
+					i = e[i_start:i_stop]
+					j = e[j_start:j_stop].split(', ')
+					time = j[0].split(".")
+					ret.append([int(time[2]),int(time[1]),int(time[0]),i+" "+j[1]])
+				break;
 			
-			if s == 1 and d.startswith('<h3 class="entry-title">'):
-				i_start = d.find(">",25)+1
-				i_stop = d.find("<",i_start)
-				j_start = d.find(">",i_stop)+1
-				j_stop = d.find("<",j_start)
-				i = d[i_start:i_stop]
-				j = d[j_start:j_stop].split(', ')
-				time = j[0].split(".")
-				ret.append([int(time[2]),int(time[1]),int(time[0]),i+" "+j[1]])
+			if s == 1:
+				s=2
 			
 			if s == 0 and d == "<h2>Anstehende Veranstaltungen</h2>":
 				s=1
+		print(ret)
 		return ret
 	else:
 		print("FEHLER")	
