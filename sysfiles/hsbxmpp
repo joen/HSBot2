@@ -1,0 +1,58 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          hsbxmpp
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Should-Start:      $portmap
+# Should-Stop:       $portmap
+# X-Start-Before:    nis
+# X-Stop-After:      nis
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# X-Interactive:     true
+# Short-Description: Example initscript
+# Description:       This file should be used to construct scripts to be
+#                    placed in /etc/init.d.
+### END INIT INFO
+
+USER=pi
+export DISPLAY=:0    
+LOG=/var/log/hsbot.log
+
+case "$1" in
+
+start)
+    echo "Starting HSB XMPP.."
+    xset s off         # don't activate screensaver
+    xset -dpms         # disable DPMS (Energy Star) features.
+    xset s noblank     # don't blank the video device
+
+    touch $LOG
+    echo "" >> $LOG
+    echo "HSB XMPP start: "$(date) >> $LOG
+    
+    su -l $USER -c "cd /home/pi/HSBot2; ./jabber.py >> $LOG &"
+    echo "Logging to "$LOG
+;;
+
+stop)
+    echo "Stopping HSB XMPP.."
+    killall hsbot.py
+    pkill .py
+    sleep 2
+    echo "" >> $LOG
+    echo "HSB XMPP stop: "$(date) >> $LOG
+;;
+
+restart)
+        echo "Restarting HSBot.."
+        $0 stop
+        sleep 2
+        $0 start
+        echo "Restarted."
+;;
+*)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
