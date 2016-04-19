@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import json,os,thread,sys,logging
+import json,os,thread,sys,logging,socket,json
 from thread import start_new_thread as thread
 from subprocess import call
 from time import sleep,localtime,time
@@ -511,28 +511,44 @@ def getInfo():
 			infot.update()
 			sleep(10)
 
-def sendMsg(msg,service='',nick=''):
-	global jabber,befehle;
+def makeToast(msg,time):
+	global toast
+	global to
 	
-	if nick == '' or nick == c.JNICK:
-		data = str(msg)
-	else:
-		data = str(nick) +": "+ str(msg)
-		
-		if msg.startswith(":"):
-			befehle.befehl(nick,msg)
-		
-	if not service == 'jabber':
-		jabber.sendTo(data)
-		
-		
-		
-	chat.insert(END, data + "\n")
-	chat.tag_add("all", "1.0", END)
-	chat.see(END)
-	chat.update()
+	mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
+	to.set(str(msg))
+	toast.grid(row=0,column=0)
+	sleep(time)
+	toast.grid_remove()
+			
+def getMsg():
+	global chat
+	while True:
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.bind(('', 2550))
+			s.listen(5)
+			
+			while True:
+				conn, addr = s.accept()
+				print 'Connected by', addr
+				jsondata = conn.recv(10240)
+				conn.close()
+				
+				data = json.loads(jsondata)
+				print(data)
+				if data['type'] == 'chat':
+					chat.insert(END, data['msg'] + "\n")
+					chat.tag_add("all", "1.0", END)
+					chat.see(END)
+					chat.update()
+					
+				if data['type'] == 'toast':
+					thread(makeToast,(data['msg'],data['time']))
 
-	f.update_idletasks()
+				f.update_idletasks()
+		except:
+			s.close()
 	
 def isup(hostname):
 	if os.system("ping -c 1 " + hostname) == 0:
@@ -541,6 +557,7 @@ def isup(hostname):
 		
 thread(getClock,())
 thread(getInfo,())
+thread(getMsg,())
 #jabber = Jabber()
 #thread(jabber.run,())
 mqtt = MQTT()
