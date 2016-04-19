@@ -89,12 +89,14 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.send_raw("<message from='"+c.JROOM+"/"+c.JNICK+"' id='lh2bs617' to='"+c.JROOM+"' type='groupchat'><subject>"+self.TOPIC+"</subject></message>")
 		
 	def muc(self, msg):
-		if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
-			data = json.dumps({'type':'chat','msg':msg['mucnick'] +': '+ msg['body']})
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			s.connect(('127.0.0.1', 2550))
-			s.sendall(data)
-			s.close()
-	
+		try:
+			if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
+				data = json.dumps({'type':'chat','msg':msg['mucnick'] +': '+ msg['body']})
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				s.connect(('127.0.0.1', 2550))
+				s.sendall(data)
+				s.close()
+		except:
+			pass
 jabber = Jabber()
 jabber.run()
