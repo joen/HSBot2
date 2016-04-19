@@ -140,6 +140,11 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def sendTo(self,txt):
 		print("[XMPP] "+str(txt))
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
+		data = json.dumps({'type':'chat','msg':c.JNICK +': '+ txt})
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect(('127.0.0.1', 2550))
+		s.sendall(data)
+		s.close()
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
@@ -155,12 +160,12 @@ class Jabber(sleekxmpp.ClientXMPP):
 			if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
 				if msg['body'].startswith(':'):
 					b.befehl(msg['mucnick'],msg['body'])
-				else:
-					data = json.dumps({'type':'chat','msg':msg['mucnick'] +': '+ msg['body']})
-					s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					s.connect(('127.0.0.1', 2550))
-					s.sendall(data)
-					s.close()
+					
+				data = json.dumps({'type':'chat','msg':msg['mucnick'] +': '+ msg['body']})
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				s.connect(('127.0.0.1', 2550))
+				s.sendall(data)
+				s.close()
 		except:
 			pass
 			
