@@ -23,18 +23,21 @@ def wordpress():
 			# print(ee)
 			# print("---------------------------------------------------")
 			if s == 2: 
-				for e in ee:
-					print ("- "+e)
-					i_start = e.find(">",25)+1
-					i_stop = e.find("<",i_start)
-					j_start = e.find(">",i_stop)+1
-					j_stop = e.find("<",j_start)
-					i = e[i_start:i_stop]
-					j = e[j_start:j_stop].split(', ')
-					time = j[0].split(".")
-					ret.append([int(time[2]),int(time[1]),int(time[0]),i+" "+j[1]])
-				break;
-			
+				try:
+					for e in ee:
+						print ("- "+e)
+						i_start = e.find(">",25)+1
+						i_stop = e.find("<",i_start)
+						j_start = e.find(">",i_stop)+1
+						j_stop = e.find("<",j_start)
+						i = e[i_start:i_stop]
+						j = e[j_start:j_stop].split(', ')
+						time = j[0].split(".")
+						ret.append([int(time[2]),int(time[1]),int(time[0]),i+" "+j[1]])
+					break;
+				except:
+					pass
+					
 			if s == 1:
 				s=2
 			
@@ -93,7 +96,7 @@ wif = ''
 jetzt = [0,0,0]
 for s in sortiert:
 	if(not (s[0] == jetzt[0] and s[1] == jetzt[1] and s[2] == jetzt[2])):
-		wif += "=== "+ str(s[2]) +"."+ str(s[1]) +". ===\n"
+		wif += "===== "+ str(s[2]) +"."+ str(s[1]) +". ====\n"
 		jetzt[0] = s[0]
 		jetzt[1] = s[1]
 		jetzt[2] = s[2]

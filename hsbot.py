@@ -426,7 +426,7 @@ class IOPorts():
 			sleep(0.1)
 			
 			
-			jabber.newSession()
+			#jabber.newSession()
 			# spacestatus open
 			call(['curl','-d status=open', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
 			
