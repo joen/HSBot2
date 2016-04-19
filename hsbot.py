@@ -191,63 +191,7 @@ class Telegram():
 			print(sys.exc_info()[0])	
 			return False
 
-# diese wartet auf Chat befehle und reagiert
-class Befehle():
-	def __init__(self):
-		print "Befehle aktiviert"
-		
-	def befehl(self,nick,msg):
-		FNAME = "./cache/pony.flv"
-		b = str(msg).split(" ",1)
-		b[0] = b[0].lower()
-		
-		# if b[0] == ':ponies':
-			# if os.path.isfile(FNAME) :
-				# starttime = randint(0,38)*10
-				# stoptime = starttime+10
-			
-				# call(["vlc","--no-audio","--play-and-exit","--start-time="+str(starttime),"--stop-time="+str(stoptime),"--quiet","-f",FNAME])
 
-			# else:
-				# m.chat("404 File nicht gefunden")
-				
-		if b[0] == ':toast':
-			thread(self.toast,(b[1],10))
-		elif b[0] == ':countdown':
-			thread(self.countdown,(b[1],))
-	
-	def toast(self,msg,time):
-		global toast
-		global to
-		
-		mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
-		to.set(str(msg))
-		toast.grid(row=0,column=0)
-		sleep(time)
-		toast.grid_remove()
-		
-	def countdown(self,timecode):
-		time = str(timecode).split(":")
-		l = len(time)
-		m = 0
-		if(l == 3):
-			m = l[0]*3600+l[1]*60+l[2]
-		elif(l == 2):
-			m = l[0]*60+l[1]
-		elif(l == 1):
-			m = l[0]
-		
-		toast.grid_remove()
-		if m > 0:
-			toast.grid(row=0,column=0)
-			while m > 0:
-				to.set(str(m))
-				toast.grid(row=0,column=0)
-				sleep(1)
-				m=m-1
-			to.set("TIMEOUT")
-			sleep(5)
-			toast.grid_remove()
 				
 # diese klasse überwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
@@ -456,6 +400,7 @@ def getMsg():
 				data = json.loads(jsondata)
 				print(data)
 				if data['type'] == 'chat':
+						
 					chat.insert(END, data['msg'] + "\n")
 					chat.tag_add("all", "1.0", END)
 					chat.see(END)
@@ -472,15 +417,15 @@ def isup(hostname):
 	if os.system("ping -c 1 " + hostname) == 0:
 		return True;
 	return False
-		
+	
+io = IOPorts()
+	
 thread(getClock,())
 thread(getInfo,())
 thread(getMsg,())
 mqtt = MQTT()
 thread(mqtt.run,())
 
-io = IOPorts()
-befehle = Befehle()
 
 
 

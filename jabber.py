@@ -7,10 +7,72 @@ from time import sleep,localtime,time
 from Tkinter import *
 from random import randint
 
+
+import paho.mqtt.publish as mospub
+
 import sleekxmpp
 
 
 import config as c
+
+# diese wartet auf Chat befehle und reagiert
+class Befehle():
+	def __init__(self):
+		print "Befehle aktiviert"
+		
+	def befehl(self,nick,msg):
+		FNAME = "./cache/pony.flv"
+		b = str(msg).split(" ",1)
+		b[0] = b[0].lower()
+		
+		# if b[0] == ':ponies':
+			# if os.path.isfile(FNAME) :
+				# starttime = randint(0,38)*10
+				# stoptime = starttime+10
+			
+				# call(["vlc","--no-audio","--play-and-exit","--start-time="+str(starttime),"--stop-time="+str(stoptime),"--quiet","-f",FNAME])
+
+			# else:
+				# m.chat("404 File nicht gefunden")
+				
+		if b[0] == ':toast':
+			jabber.sendTo(nick +" mag Toast")
+			thread(self.toast,(b[1],10))
+		elif b[0] == ':countdown':
+			thread(self.countdown,(b[1],))
+	
+	def toast(self,msg,time):
+		global toast
+		
+		mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
+		data = json.dumps({'type':'toast','msg':msg,'time':time})
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect(('127.0.0.1', 2550))
+		s.sendall(data)
+		s.close()
+		
+	def countdown(self,timecode):
+		time = str(timecode).split(":")
+		l = len(time)
+		m = 0
+		if(l == 3):
+			m = l[0]*3600+l[1]*60+l[2]
+		elif(l == 2):
+			m = l[0]*60+l[1]
+		elif(l == 1):
+			m = l[0]
+		
+		toast.grid_remove()
+		if m > 0:
+			toast.grid(row=0,column=0)
+			while m > 0:
+				to.set(str(m))
+				toast.grid(row=0,column=0)
+				sleep(1)
+				m=m-1
+			to.set("TIMEOUT")
+			sleep(5)
+			toast.grid_remove()
 
 class Jabber(sleekxmpp.ClientXMPP):
 	logging.basicConfig(level=logging.DEBUG)
@@ -91,12 +153,19 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def muc(self, msg):
 		try:
 			if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
-				data = json.dumps({'type':'chat','msg':msg['mucnick'] +': '+ msg['body']})
-				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				s.connect(('127.0.0.1', 2550))
-				s.sendall(data)
-				s.close()
+				if msg['body'].startswith(':'):
+					b.befehl(msg['mucnick'],msg['body'])
+				else:
+					data = json.dumps({'type':'chat','msg':msg['mucnick'] +': '+ msg['body']})
+					s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					s.connect(('127.0.0.1', 2550))
+					s.sendall(data)
+					s.close()
 		except:
 			pass
+			
+b = Befehle()
+
+			
 jabber = Jabber()
 jabber.run()
