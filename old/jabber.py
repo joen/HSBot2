@@ -12,6 +12,7 @@ import paho.mqtt.publish as mospub
 
 import sleekxmpp
 
+import RPi.GPIO as g
 
 import config as c
 

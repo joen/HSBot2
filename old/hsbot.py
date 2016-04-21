@@ -7,65 +7,21 @@ from time import sleep,localtime,time
 from Tkinter import *
 from random import randint
 
-import sleekxmpp
+from telegram import Updater,Bot
 from optparse import OptionParser
-
-import RPi.GPIO as g
 
 import paho.mqtt.client as mossub
 import paho.mqtt.publish as mospub
 
+import RPi.GPIO as g
+
 import config as c
 
-lastStatusCh = 0 # wann das letzte mal der space status geändert wurde
+lastStatusCh = 0 # wann das letzte mal der space status geÃ¤ndert wurde
 
 #gpio einstellungen
 g.setwarnings(False)
 g.setmode(g.BOARD)
-
-def befehl(nick,msg):
-	FNAME = "./cache/pony.flv"
-	b = str(msg).split(" ",1)
-	b[0] = b[0].lower()
-	
-	# if b[0] == ':ponies':
-		# if os.path.isfile(FNAME) :
-			# starttime = randint(0,38)*10
-			# stoptime = starttime+10
-		
-			# call(["vlc","--no-audio","--play-and-exit","--start-time="+str(starttime),"--stop-time="+str(stoptime),"--quiet","-f",FNAME])
-
-		# else:
-			# m.chat("404 File nicht gefunden")
-			
-	if b[0] == ':toast':
-		jabber.sendTo(nick +" mag Toast")
-		makeToast(b[1],10)
-	elif b[0] == ':countdown':
-		thread(countdown,(b[1],))	
-	
-def countdown(timecode):
-	time = str(timecode).split(":")
-	l = len(time)
-	m = 0
-	if(l == 3):
-		m = l[0]*3600+l[1]*60+l[2]
-	elif(l == 2):
-		m = l[0]*60+l[1]
-	elif(l == 1):
-		m = l[0]
-	
-	toast.grid_remove()
-	if m > 0:
-		toast.grid(row=0,column=0)
-		while m > 0:
-			to.set(str(m))
-			toast.grid(row=0,column=0)
-			sleep(1)
-			m=m-1
-		to.set("TIMEOUT")
-		sleep(5)
-		toast.grid_remove()
 
 def setTopic(tpc):
 	pass
@@ -101,101 +57,18 @@ class MQTT():
 	def on_message(self,client, userdata, msg):
 		print("MQTT Msg: "+msg.topic+" "+str(msg.payload))
 		if(msg.topic == 'toast'):
-			makeToast(msg.payload,10)
+			befehle.toast(msg.payload,10)
 		
 		if(msg.topic == 'chat'):
-			sendMsg("[MQTT]: "+str(msg.payload))
+			sendMsg(str(msg.payload),'mqtt',"[MQTT]")
 		
 	def incMsg(msg,nick=''):
 		pass
 
-class Jabber(sleekxmpp.ClientXMPP):
-	logging.basicConfig(level=logging.DEBUG)
-	XMPP_CA_CERT_FILE = c.JCERT		#Setze Certificat fuer xmpp
-	auto_reconnect = True
 
-	def __init__(self):
-		print("[init]")
-		sleekxmpp.ClientXMPP.__init__(self, c.JUSER, c.JPASS)
-		self.register_plugin('xep_0030') # Service Discovery
-		self.register_plugin('xep_0045') # Multi-User Chat
-		self.register_plugin('xep_0199') # XMPP Ping
-		
-	def run(self):
-		self.newSession()
-		while True:
-			print("[run] ")
-			#if (self.online + 65) < time():
-				#self.disconnect()
-				#sleep(5)
-				#self.newSession()
-			#else:
-			sleep(30)
-			
-			self.send_presence()
-				#io.blink_start(2,0.5)
-				
-	def newSession(self): 
-		while not self.connect():
-			sleep(0.1)
-		print('[newSession] 1')
-		self.process()
-		print('[newSession] 2')
-		# print('[newSession] 3')
-		# if g.input(15):
-			# print('[newSession] 4')
-			# g.output(11,0)
-		# else:
-			# print('[newSession] 5')
-			# g.output(11,1)
-			
-		self.add_event_handler("session_start", self.onStart)
-		self.add_event_handler("groupchat_message", self.muc)
-		self.add_event_handler("diconnected", self.newSession)
-		#self.add_event_handler("groupchat_subject", self.onSubj)
-		self.add_event_handler("presence_available",self.onPresence)
-				
-	def onStart(self, event):
-		print('[start]')
-		self.get_roster()
-		self.send_presence()
-		self.plugin['xep_0045'].joinMUC(c.JROOM, c.JNICK,wait=True)		
-		
-	def onPresence(self,event):
-		print('[presence]'+str(event['from'].bare))
-		if event['from'].bare == c.JUSER:
-			#io.blink_stop()
-			print('[timeup]'+ str(time()))
-			
-		
-	def onSubj(self,event):
-		if not event["muc"]["nick"] == c.JNICK:
-			self.changeSubj(False)
-		
-	def sendTo(self,txt):
-		print("[XMPP] "+str(txt))
-		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
-		
-	def sendPrivate(self,nick,text):
-		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
-		
-	def changeSubj(self,subj):
-		if subj:
-			self.TOPIC = str(subj)
 
-		self.send_raw("<message from='"+c.JROOM+"/"+c.JNICK+"' id='lh2bs617' to='"+c.JROOM+"' type='groupchat'><subject>"+self.TOPIC+"</subject></message>")
-		
-	def muc(self, msg):
-		#try:
-			if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
-				if msg['body'].startswith(':'):
-					befehl(msg['mucnick'],msg['body'])
-					
-				sendMsg(msg['mucnick']+': '+msg['body'])
-		#except:
-			pass
-			
-# diese klasse überwacht alle GPIO ports und reagiert nach wunsch
+				
+# diese klasse Ã¼berwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
 	blinking = False
 
@@ -203,7 +76,7 @@ class IOPorts():
 		g.setup(11, g.OUT) #Botlampe
 		g.setup(15, g.IN, pull_up_down=g.PUD_UP) #Botschalter Hi=off
 		
-		g.add_event_detect(15, g.BOTH, callback=self.makeSpaceStatus, bouncetime=300)
+		g.add_event_detect(15, g.BOTH, callback=self.doSpaceStatus, bouncetime=300)
 	
 	def blinking(self,interval,ratio):
 		while self.blinking:
@@ -222,10 +95,10 @@ class IOPorts():
 		self.blinking = False
 	
 	
-	def makeSpaceStatus(self,ch):
+	def doSpaceStatus(self,ch):
 		if g.input(15):
 			# in chat schreiben, dass spcae geschlossen
-			sendMsg("--- Der space ist nun geschlossen.")
+			#sendMsg("Der space ist nun geschlossen.")
 			sleep(5)
 			#monitor on 
 			call(["./monitor.sh","off"])
@@ -299,7 +172,7 @@ class IOPorts():
 			
 			sleep(5)
 			# in chat schreiben, dass space offen
-			sendMsg("--- Der Space ist nun geöffnet.")
+			#sendMsg("Der Space ist nun geÃ¶ffnet.")
 
 # GUI anlegen
 f = Tk()
@@ -347,7 +220,6 @@ f.rowconfigure(2, minsize=548)
 
 data = "Chatfenster"
 
-# sorgt für die uhr
 def getClock():
 	global ts
 	while True:
@@ -356,7 +228,6 @@ def getClock():
 		#f.update_idletasks()
 		sleep(5)
 
-# cycelt infos durch
 def getInfo():
 	global infot 
 	global infoh
@@ -377,7 +248,6 @@ def getInfo():
 			infot.update()
 			sleep(10)
 
-#sendet toast an display
 def makeToast(msg,time):
 	global toast
 	global to
@@ -387,29 +257,48 @@ def makeToast(msg,time):
 	toast.grid(row=0,column=0)
 	sleep(time)
 	toast.grid_remove()
-	
-#sendet nachricht an display	
-def sendMsg(msg):
+			
+def getMsg():
 	global chat
-	chat.insert(END, msg + "\n")
-	chat.tag_add("all", "1.0", END)
-	chat.see(END)
-	chat.update()
-	f.update_idletasks()
+	while True:
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.bind(('', 2550))
+			s.listen(5)
+			
+			while True:
+				conn, addr = s.accept()
+				print 'Connected by', addr
+				jsondata = conn.recv(10240)
+				conn.close()
+				
+				data = json.loads(jsondata)
+				print(data)
+				if data['type'] == 'chat':
+						
+					chat.insert(END, data['msg'] + "\n")
+					chat.tag_add("all", "1.0", END)
+					chat.see(END)
+					chat.update()
+					
+				if data['type'] == 'toast':
+					thread(makeToast,(data['msg'],data['time']))
+
+				f.update_idletasks()
+		except:
+			s.close()
 	
-# def isup(hostname):
-	# if os.system("ping -c 1 " + hostname) == 0:
-		# return True;
-	# return False
+def isup(hostname):
+	if os.system("ping -c 1 " + hostname) == 0:
+		return True;
+	return False
 	
 io = IOPorts()
 	
 thread(getClock,())
 thread(getInfo,())
-#thread(getMsg,())
+thread(getMsg,())
 mqtt = MQTT()
-jabber = Jabber()
-thread(jabber.run,())
 thread(mqtt.run,())
 
 
