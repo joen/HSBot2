@@ -11,6 +11,7 @@ import sleekxmpp
 from optparse import OptionParser
 
 import RPi.GPIO as g
+#import GPdummy as g
 
 import paho.mqtt.client as mossub
 import paho.mqtt.publish as mospub
@@ -28,16 +29,9 @@ def befehl(nick,msg):
 	b = str(msg).split(" ",1)
 	b[0] = b[0].lower()
 	
-	# if b[0] == ':ponies':
-		# if os.path.isfile(FNAME) :
-			# starttime = randint(0,38)*10
-			# stoptime = starttime+10
-		
-			# call(["vlc","--no-audio","--play-and-exit","--start-time="+str(starttime),"--stop-time="+str(stoptime),"--quiet","-f",FNAME])
-
-		# else:
-			# m.chat("404 File nicht gefunden")
-			
+	if b[0] == ':ponies':
+		jabber.sendTo("Ponies sind grad Feiern")
+		makeToast(b[1],10)
 	if b[0] == ':toast':
 		jabber.sendTo(nick +" mag Toast")
 		makeToast(b[1],10)
@@ -405,7 +399,7 @@ def sendMsg(msg):
 io = IOPorts()
 	
 thread(getClock,())
-thread(getInfo,())
+#thread(getInfo,())
 #thread(getMsg,())
 mqtt = MQTT()
 jabber = Jabber()
