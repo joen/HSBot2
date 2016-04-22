@@ -1,1 +1,4 @@
 blinken bei fehler
+:img befehl
+termine per web nachtragen
+:alert befehl (sowas wie timer)
