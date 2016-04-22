@@ -29,14 +29,18 @@ def befehl(nick,msg):
 	b = str(msg).split(" ",1)
 	b[0] = b[0].lower()
 	
+	if len(b) == 2:
+		param = b[1]
+	else:
+		param = '';
+	
 	if b[0] == ':ponies':
 		jabber.sendTo("Ponies sind grad Feiern")
-		makeToast(b[1],10)
 	if b[0] == ':toast':
 		jabber.sendTo(nick +" mag Toast")
-		makeToast(b[1],10)
+		thread(makeToast,(param,10))
 	elif b[0] == ':countdown':
-		thread(countdown,(b[1],))	
+		thread(countdown,(param,))	
 	
 def countdown(timecode):
 	time = str(timecode).split(":")
