@@ -108,7 +108,7 @@ class MQTT():
 		pass
 
 class Jabber(sleekxmpp.ClientXMPP):
-	logging.basicConfig(level=logging.DEBUG)
+	logging.basicConfig(level=logging.ERROR)
 	XMPP_CA_CERT_FILE = c.JCERT		#Setze Certificat fuer xmpp
 	auto_reconnect = True
 
@@ -403,8 +403,8 @@ def sendMsg(msg):
 io = IOPorts()
 	
 thread(getClock,())
-#thread(getInfo,())
-#thread(getMsg,())
+thread(getInfo,())
+
 mqtt = MQTT()
 jabber = Jabber()
 thread(jabber.run,())
