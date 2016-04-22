@@ -19,6 +19,7 @@ import paho.mqtt.publish as mospub
 import config as c
 
 lastStatusCh = 0 # wann das letzte mal der space status geändert wurde
+prioToast = False # wenn ein prioritäts Toast da ist werden sachen wie countdown ausgeblendet
 
 #gpio einstellungen
 g.setwarnings(False)
@@ -33,16 +34,21 @@ def befehl(nick,msg):
 		param = b[1]
 	else:
 		param = '';
+	try:
+		if b[0] == ':ponies':
+			jabber.sendTo("Ponies sind grad Feiern")
+		if b[0] == ':toast':
+			jabber.sendTo(nick +" mag Toast")
+			thread(makeToast,(param,10))
+		elif b[0] == ':countdown':
+			thread(makeCountdown,(nick,param))	
+	except:
+		pass
 	
-	if b[0] == ':ponies':
-		jabber.sendTo("Ponies sind grad Feiern")
-	if b[0] == ':toast':
-		jabber.sendTo(nick +" mag Toast")
-		thread(makeToast,(param,10))
-	elif b[0] == ':countdown':
-		thread(countdown,(param,))	
-	
-def countdown(timecode):
+def makeCountdown(nick,timecode):
+	global toast
+	global prioToast
+
 	time = str(timecode).split(":")
 	l = len(time)
 	m = 0
@@ -53,18 +59,38 @@ def countdown(timecode):
 	elif(l == 1):
 		m = l[0]
 	
-	toast.grid_remove()
+	#toast.grid_remove()
 	if m > 0:
 		toast.grid(row=0,column=0)
 		while m > 0:
-			to.set(str(m))
-			toast.grid(row=0,column=0)
+			if not prioToast:
+				to.set(str(m))
 			sleep(1)
 			m=m-1
-		to.set("TIMEOUT")
-		sleep(5)
+		jabber.sendTo("@"+nick +" Dein Countdown ist abgelaufen.")
 		toast.grid_remove()
 
+#sendet toast an display
+def makeToast(msg,time):
+	global toast
+	global to
+	global prioToast
+	
+	prioToast = True
+	mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
+	to.set(str(msg))
+	toast.grid(row=0,column=0)
+	sleep(time)
+	toast.grid_remove()
+	prioToast = False
+
+#sendet zurück welchen Status der Space grade hat	
+def makeStatus():
+	if g.input(15):
+		jabber.sendTo("Der Space ist aktuell geschlossen.")
+	else:
+		jabber.sendTo("Der Space ist aktuell geöffnet.")
+		
 def setTopic(tpc):
 	pass
 	
@@ -374,17 +400,6 @@ def getInfo():
 			ti.set(j)
 			infot.update()
 			sleep(10)
-
-#sendet toast an display
-def makeToast(msg,time):
-	global toast
-	global to
-	
-	mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
-	to.set(str(msg))
-	toast.grid(row=0,column=0)
-	sleep(time)
-	toast.grid_remove()
 	
 #sendet nachricht an display	
 def sendMsg(msg):
