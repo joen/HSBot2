@@ -38,9 +38,9 @@ def befehl(nick,msg):
 		param = '';
 	try:
 		if b[0] == ':ponies':
-			jabber.sendTo("Ponies sind grad Feiern")
+			jabber.sendTo("[PONIES] Ponies sind grad Feiern")
 		elif b[0] == ':toast':
-			jabber.sendTo(nick +" mag Toast")
+			jabber.sendTo("[TOAST] "+ nick +" mag Toast")
 			thread(makeToast,(param,10))
 		elif b[0] == ':trains':
 			thread(makeTrains())
@@ -69,7 +69,7 @@ def makeTrains():
 		antw[12] = "Bitte nehmen sie Ihre Regenschirme wieder mit. Die Bahn hat mittlerweile ausreichend."
 		antw[13] = "Im gesamten Zug herrscht absolutes Nichtraucherverbot."
 
-		jabber.sendTo(antw[randrange(0,len(antw))])
+		jabber.sendTo("[TRAIN] "+ antw[randrange(0,len(antw))])
 	
 # zeigt den countdown mit low prio (bedeutet, wenn tost kommt wird der countdown ausgesetzt)
 def makeCountdown(nick,timecode):
@@ -94,7 +94,7 @@ def makeCountdown(nick,timecode):
 				to.set(str(m))
 			sleep(1)
 			m=m-1
-		jabber.sendTo("@"+nick +" Dein Countdown ist abgelaufen.")
+		jabber.sendTo("[COUNTDOWN] @"+nick +" Dein Countdown ist abgelaufen.")
 		toast.grid_remove()
 
 #sendet toast an display
@@ -114,9 +114,9 @@ def makeToast(msg,time):
 #sendet zurück welchen Status der Space grade hat	
 def makeStatus():
 	if g.input(15):
-		jabber.sendTo("Der Space ist aktuell geschlossen.")
+		jabber.sendTo("[STATUS] Der Space ist aktuell geschlossen.")
 	else:
-		jabber.sendTo("Der Space ist aktuell geöffnet.")
+		jabber.sendTo("[STATUS] Der Space ist aktuell geöffnet.")
 		
 def setTopic(tpc):
 	pass
@@ -166,7 +166,6 @@ class Jabber(sleekxmpp.ClientXMPP):
 	auto_reconnect = True
 
 	def __init__(self):
-		print("[init]")
 		sleekxmpp.ClientXMPP.__init__(self, c.JUSER, c.JPASS)
 		self.register_plugin('xep_0030') # Service Discovery
 		self.register_plugin('xep_0045') # Multi-User Chat
@@ -175,30 +174,14 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def run(self):
 		self.newSession()
 		while True:
-			print("[run] ")
-			#if (self.online + 65) < time():
-				#self.disconnect()
-				#sleep(5)
-				#self.newSession()
-			#else:
 			sleep(30)
-			
 			self.send_presence()
-				#io.blink_start(2,0.5)
 				
 	def newSession(self): 
 		while not self.connect():
 			sleep(0.1)
-		print('[newSession] 1')
 		self.process()
-		print('[newSession] 2')
-		# print('[newSession] 3')
-		# if g.input(15):
-			# print('[newSession] 4')
-			# g.output(11,0)
-		# else:
-			# print('[newSession] 5')
-			# g.output(11,1)
+
 			
 		self.add_event_handler("session_start", self.onStart)
 		self.add_event_handler("groupchat_message", self.muc)
@@ -226,6 +209,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def sendTo(self,txt):
 		print("[XMPP] "+str(txt))
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
+		sendMsg(cJNICK +": "+ txt):
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
