@@ -18,7 +18,7 @@ import paho.mqtt.publish as mospub
 
 import config as c
 
-lastStatusCh = 0 # wann das letzte mal der space status geändert wurde
+lastStatus = 0 # wann das letzte mal der space status geändert wurde
 prioToast = False # wenn ein prioritäts Toast da ist werden sachen wie countdown ausgeblendet
 lastTrain = 0 #letzter Zeug
 
@@ -121,15 +121,17 @@ def makeStatus():
 def setTopic(tpc):
 	pass
 	
-def incMsg(msg,nick=''):
-	if not nick == '':
-		msg = nick+": "+msg
+#def incMsg(msg,nick=''):
+#	if not nick == '':
+#		msg = nick+": "+msg
 	#todo
 
-def debugMsg(msg,fkt=''):
+# schliebs ne nachricht über mqtt topic debug
+def debugMsg(msg,fkt='DEBUG'):
 	pl = "["+str(fkt)+"]: "+str(msg)
 	mospub.single(c.MQTTDEBU, payload=pl, hostname=c.MQTTSRV)
 
+#mosquito Klasse
 class MQTT():
 	client = mossub.Client()
 	
@@ -160,6 +162,7 @@ class MQTT():
 	def incMsg(msg,nick=''):
 		pass
 
+# xmpp klasse
 class Jabber(sleekxmpp.ClientXMPP):
 	logging.basicConfig(level=logging.ERROR)
 	XMPP_CA_CERT_FILE = c.JCERT		#Setze Certificat fuer xmpp
@@ -200,8 +203,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 		if event['from'].bare == c.JUSER:
 			#io.blink_stop()
 			print('[timeup]'+ str(time()))
-			
-		
+				
 	def onSubj(self,event):
 		if not event["muc"]["nick"] == c.JNICK:
 			self.changeSubj(False)
@@ -256,20 +258,22 @@ class IOPorts():
 	def blink_stop(self):
 		self.blinking = False
 	
-	
 	def makeSpaceStatus(self,ch):
 		if g.input(15):
-			# in chat schreiben, dass spcae geschlossen
-			sendMsg("--- Der space ist nun geschlossen.")
-			sleep(5)
 			#monitor on 
 			call(["./monitor.sh","off"])
+			sleep(5)
 			
 			# spacestatus close
 			call(['curl','-d status=close', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
 			
 			# port 15 off
 			g.output(11,0)
+			
+			
+			# in chat schreiben, dass spcae geschlossen
+			sendMsg("--- Der Space ist nun geschlossen.")
+			debugMsg("Space geschlossen")
 		else:
 			#monitor on 
 			call(["./monitor.sh","on"])
@@ -335,6 +339,8 @@ class IOPorts():
 			sleep(5)
 			# in chat schreiben, dass space offen
 			sendMsg("--- Der Space ist nun geöffnet.")
+			debugMsg("Space offen")
+		lastStatus = time() #TODO
 
 # GUI anlegen
 f = Tk()
@@ -420,11 +426,6 @@ def sendMsg(msg):
 	chat.see(END)
 	chat.update()
 	f.update_idletasks()
-	
-# def isup(hostname):
-	# if os.system("ping -c 1 " + hostname) == 0:
-		# return True;
-	# return False
 	
 io = IOPorts()
 	
