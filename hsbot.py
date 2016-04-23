@@ -20,11 +20,13 @@ import config as c
 
 lastStatusCh = 0 # wann das letzte mal der space status geändert wurde
 prioToast = False # wenn ein prioritäts Toast da ist werden sachen wie countdown ausgeblendet
+lastTrain = 0 #letzter Zeug
 
 #gpio einstellungen
 g.setwarnings(False)
 g.setmode(g.BOARD)
 
+# erkennt und verteilt befehle weiter
 def befehl(nick,msg):
 	FNAME = "./cache/pony.flv"
 	b = str(msg).split(" ",1)
@@ -37,14 +39,39 @@ def befehl(nick,msg):
 	try:
 		if b[0] == ':ponies':
 			jabber.sendTo("Ponies sind grad Feiern")
-		if b[0] == ':toast':
+		elif b[0] == ':toast':
 			jabber.sendTo(nick +" mag Toast")
 			thread(makeToast,(param,10))
+		elif b[0] == ':trains':
+			thread(makeTrains())
 		elif b[0] == ':countdown':
 			thread(makeCountdown,(nick,param))	
 	except:
 		pass
 	
+def makeTrains():
+	if lastTrain < (time()-300):
+		lastTrain = time()
+		jabber.sendTo(nick +" mag Züge")
+	else:
+		antw[0] = "Zug hat verspätung."
+		antw[1] = "Zug macht Pause."
+		antw[2] = "Zug hat keine Lust."
+		antw[3] = "Im Zug ist die Heizung ausgefallen."
+		antw[4] = "Zugtüren lassen sich nicht schließen."
+		antw[5] = "Zug heute in umgekehrter Reihenfolge."
+		antw[6] = "Zug heute abweichend von Gleis 2 auf Gleis 238."
+		antw[7] = "Zugbeleuchtung wurde auf halbdunkel gestellt,damit wir noch genug strom für die Klimaanlagen haben."
+		antw[8] = "Bitte stellen sie keine Gepäckstücke vor die Türen, diese dienen dem Zugpersonal als Fluchtweg."
+		antw[9] = "Sehr geehrte Fahrgäste, heute bekommen sie für ihr Geld 20Minuten mehr Fahrzeit geboten."
+		antw[10] = "Sollten sie auf der Suche nach Wagen 9 sein, den haben wir heute ganz geschickt zwischen Wagen 5 und 6 versteckt."
+		antw[11] = "Weitere Informationen entnehmen sie bitte dem Zugpersonal."
+		antw[12] = "Bitte nehmen sie Ihre Regenschirme wieder mit. Die Bahn hat mittlerweile ausreichend."
+		antw[13] = "Im gesamten Zug herrscht absolutes Nichtraucherverbot."
+
+		jabber.sendTo(antw[randrange(0,len(antw))])
+	
+# zeigt den countdown mit low prio (bedeutet, wenn tost kommt wird der countdown ausgesetzt)
 def makeCountdown(nick,timecode):
 	global toast
 	global prioToast
