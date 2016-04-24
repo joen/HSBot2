@@ -86,19 +86,20 @@ def makeCountdown(nick,timecode):
 	l = len(time)
 	m = 0
 	if(l == 3):
-		m = l[0]*3600+l[1]*60+l[2]
+		m = int(time[0])*3600+int(time[1])*60+int(time[2])
 	elif(l == 2):
-		m = l[0]*60+l[1]
+		m = int(time[0])*60+int(time[1])
 	elif(l == 1):
-		m = l[0]
+		m = int(time[0])
 	
 	#toast.grid_remove()
 	if m > 0:
-		toast.grid(row=0,column=0)
 		while m > 0:
 			if not prioToast:
+				toast.grid(row=0,column=0)
 				to.set(str(m))
 			sleep(1)
+			print("[COUNTDOWN] "+ str(m))
 			m=m-1
 		jabber.sendTo("[COUNTDOWN] @"+nick +" Dein Countdown ist abgelaufen.")
 		toast.grid_remove()
@@ -118,12 +119,12 @@ def makeToast(msg,time):
 	toast.grid_remove()
 	prioToast = False
 
-#sendet zurck welchen Status der Space grade hat	
+#sendet zurück welchen Status der Space grade hat	
 def makeStatus():
 	if g.input(15):
 		jabber.sendTo("[STATUS] Der Space ist aktuell geschlossen.")
 	else:
-		jabber.sendTo("[STATUS] Der Space ist aktuell geffnet.")
+		jabber.sendTo("[STATUS] Der Space ist aktuell geöffnet.")
 		
 def setTopic(tpc):
 	pass
@@ -133,7 +134,7 @@ def setTopic(tpc):
 #		msg = nick+": "+msg
 	#todo
 
-# schliebs ne nachricht ber mqtt topic debug
+# schliebs ne nachricht über mqtt topic debug
 def debugMsg(msg,fkt='DEBUG'):
 	pl = "["+str(fkt)+"]: "+str(msg)
 	mospub.single(c.MQTTDEBU, payload=pl, hostname=c.MQTTSRV)
@@ -231,15 +232,14 @@ class Jabber(sleekxmpp.ClientXMPP):
 		
 	def muc(self, msg):
 		#try:
-			if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
+			if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):	
+				sendMsg(msg['mucnick']+': '+msg['body'])
 				if msg['body'].startswith(':'):
 					befehl(msg['mucnick'],msg['body'])
-					
-				sendMsg(msg['mucnick']+': '+msg['body'])
 		#except:
 			pass
 			
-# diese klasse berwacht alle GPIO ports und reagiert nach wunsch
+# diese klasse überwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
 	blinking = False
 
