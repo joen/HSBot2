@@ -18,12 +18,15 @@ import paho.mqtt.publish as mospub
 
 import config as c
 
-lastStatusCh = 0 # wann das letzte mal der space status geändert wurde
+lastStatus = 0 # wann das letzte mal der space status geändert wurde
+prioToast = False # wenn ein prioritäts Toast da ist werden sachen wie countdown ausgeblendet
+lastTrain = 0 #letzter Zeug
 
 #gpio einstellungen
 g.setwarnings(False)
 g.setmode(g.BOARD)
 
+# erkennt und verteilt befehle weiter
 def befehl(nick,msg):
 	FNAME = "./cache/pony.flv"
 	b = str(msg).split(" ",1)
@@ -33,16 +36,46 @@ def befehl(nick,msg):
 		param = b[1]
 	else:
 		param = '';
+	try:
+		if b[0] == ':ponies':
+			jabber.sendTo("[PONIES] Ponies sind grad Feiern")
+		elif b[0] == ':toast':
+			jabber.sendTo("[TOAST] "+ nick +" mag Toast")
+			thread(makeToast,(param,10))
+		elif b[0] == ':trains':
+			thread(makeTrains())
+		elif b[0] == ':countdown':
+			thread(makeCountdown,(nick,param))	
+	except:
+		pass
 	
-	if b[0] == ':ponies':
-		jabber.sendTo("Ponies sind grad Feiern")
-	if b[0] == ':toast':
-		jabber.sendTo(nick +" mag Toast")
-		thread(makeToast,(param,10))
-	elif b[0] == ':countdown':
-		thread(countdown,(param,))	
+def makeTrains():
+	if lastTrain < (time()-300):
+		lastTrain = time()
+		jabber.sendTo(nick +" mag Züge")
+	else:
+		antw[0] = "Zug hat verspätung."
+		antw[1] = "Zug macht Pause."
+		antw[2] = "Zug hat keine Lust."
+		antw[3] = "Im Zug ist die Heizung ausgefallen."
+		antw[4] = "Zugtüren lassen sich nicht schließen."
+		antw[5] = "Zug heute in umgekehrter Reihenfolge."
+		antw[6] = "Zug heute abweichend von Gleis 2 auf Gleis 238."
+		antw[7] = "Zugbeleuchtung wurde auf halbdunkel gestellt,damit wir noch genug strom für die Klimaanlagen haben."
+		antw[8] = "Bitte stellen sie keine Gepäckstücke vor die Türen, diese dienen dem Zugpersonal als Fluchtweg."
+		antw[9] = "Sehr geehrte Fahrgäste, heute bekommen sie für ihr Geld 20Minuten mehr Fahrzeit geboten."
+		antw[10] = "Sollten sie auf der Suche nach Wagen 9 sein, den haben wir heute ganz geschickt zwischen Wagen 5 und 6 versteckt."
+		antw[11] = "Weitere Informationen entnehmen sie bitte dem Zugpersonal."
+		antw[12] = "Bitte nehmen sie Ihre Regenschirme wieder mit. Die Bahn hat mittlerweile ausreichend."
+		antw[13] = "Im gesamten Zug herrscht absolutes Nichtraucherverbot."
+
+		jabber.sendTo("[TRAIN] "+ antw[randrange(0,len(antw))])
 	
-def countdown(timecode):
+# zeigt den countdown mit low prio (bedeutet, wenn tost kommt wird der countdown ausgesetzt)
+def makeCountdown(nick,timecode):
+	global toast
+	global prioToast
+
 	time = str(timecode).split(":")
 	l = len(time)
 	m = 0
@@ -53,30 +86,52 @@ def countdown(timecode):
 	elif(l == 1):
 		m = l[0]
 	
-	toast.grid_remove()
+	#toast.grid_remove()
 	if m > 0:
 		toast.grid(row=0,column=0)
 		while m > 0:
-			to.set(str(m))
-			toast.grid(row=0,column=0)
+			if not prioToast:
+				to.set(str(m))
 			sleep(1)
 			m=m-1
-		to.set("TIMEOUT")
-		sleep(5)
+		jabber.sendTo("[COUNTDOWN] @"+nick +" Dein Countdown ist abgelaufen.")
 		toast.grid_remove()
 
+#sendet toast an display
+def makeToast(msg,time):
+	global toast
+	global to
+	global prioToast
+	
+	prioToast = True
+	mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
+	to.set(str(msg))
+	toast.grid(row=0,column=0)
+	sleep(time)
+	toast.grid_remove()
+	prioToast = False
+
+#sendet zurück welchen Status der Space grade hat	
+def makeStatus():
+	if g.input(15):
+		jabber.sendTo("[STATUS] Der Space ist aktuell geschlossen.")
+	else:
+		jabber.sendTo("[STATUS] Der Space ist aktuell geöffnet.")
+		
 def setTopic(tpc):
 	pass
 	
-def incMsg(msg,nick=''):
-	if not nick == '':
-		msg = nick+": "+msg
+#def incMsg(msg,nick=''):
+#	if not nick == '':
+#		msg = nick+": "+msg
 	#todo
 
-def debugMsg(msg,fkt=''):
+# schliebs ne nachricht über mqtt topic debug
+def debugMsg(msg,fkt='DEBUG'):
 	pl = "["+str(fkt)+"]: "+str(msg)
 	mospub.single(c.MQTTDEBU, payload=pl, hostname=c.MQTTSRV)
 
+#mosquito Klasse
 class MQTT():
 	client = mossub.Client()
 	
@@ -107,13 +162,13 @@ class MQTT():
 	def incMsg(msg,nick=''):
 		pass
 
+# xmpp klasse
 class Jabber(sleekxmpp.ClientXMPP):
 	logging.basicConfig(level=logging.ERROR)
 	XMPP_CA_CERT_FILE = c.JCERT		#Setze Certificat fuer xmpp
 	auto_reconnect = True
 
 	def __init__(self):
-		print("[init]")
 		sleekxmpp.ClientXMPP.__init__(self, c.JUSER, c.JPASS)
 		self.register_plugin('xep_0030') # Service Discovery
 		self.register_plugin('xep_0045') # Multi-User Chat
@@ -122,30 +177,14 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def run(self):
 		self.newSession()
 		while True:
-			print("[run] ")
-			#if (self.online + 65) < time():
-				#self.disconnect()
-				#sleep(5)
-				#self.newSession()
-			#else:
 			sleep(30)
-			
 			self.send_presence()
-				#io.blink_start(2,0.5)
 				
 	def newSession(self): 
 		while not self.connect():
 			sleep(0.1)
-		print('[newSession] 1')
 		self.process()
-		print('[newSession] 2')
-		# print('[newSession] 3')
-		# if g.input(15):
-			# print('[newSession] 4')
-			# g.output(11,0)
-		# else:
-			# print('[newSession] 5')
-			# g.output(11,1)
+
 			
 		self.add_event_handler("session_start", self.onStart)
 		self.add_event_handler("groupchat_message", self.muc)
@@ -164,8 +203,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 		if event['from'].bare == c.JUSER:
 			#io.blink_stop()
 			print('[timeup]'+ str(time()))
-			
-		
+				
 	def onSubj(self,event):
 		if not event["muc"]["nick"] == c.JNICK:
 			self.changeSubj(False)
@@ -173,6 +211,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def sendTo(self,txt):
 		print("[XMPP] "+str(txt))
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
+		sendMsg(cJNICK +": "+ txt):
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
@@ -219,20 +258,22 @@ class IOPorts():
 	def blink_stop(self):
 		self.blinking = False
 	
-	
 	def makeSpaceStatus(self,ch):
 		if g.input(15):
-			# in chat schreiben, dass spcae geschlossen
-			sendMsg("--- Der space ist nun geschlossen.")
-			sleep(5)
 			#monitor on 
 			call(["./monitor.sh","off"])
+			sleep(5)
 			
 			# spacestatus close
 			call(['curl','-d status=close', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
 			
 			# port 15 off
 			g.output(11,0)
+			
+			
+			# in chat schreiben, dass spcae geschlossen
+			sendMsg("--- Der Space ist nun geschlossen.")
+			debugMsg("Space geschlossen")
 		else:
 			#monitor on 
 			call(["./monitor.sh","on"])
@@ -298,6 +339,8 @@ class IOPorts():
 			sleep(5)
 			# in chat schreiben, dass space offen
 			sendMsg("--- Der Space ist nun geöffnet.")
+			debugMsg("Space offen")
+		lastStatus = time() #TODO
 
 # GUI anlegen
 f = Tk()
@@ -374,17 +417,6 @@ def getInfo():
 			ti.set(j)
 			infot.update()
 			sleep(10)
-
-#sendet toast an display
-def makeToast(msg,time):
-	global toast
-	global to
-	
-	mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
-	to.set(str(msg))
-	toast.grid(row=0,column=0)
-	sleep(time)
-	toast.grid_remove()
 	
 #sendet nachricht an display	
 def sendMsg(msg):
@@ -394,11 +426,6 @@ def sendMsg(msg):
 	chat.see(END)
 	chat.update()
 	f.update_idletasks()
-	
-# def isup(hostname):
-	# if os.system("ping -c 1 " + hostname) == 0:
-		# return True;
-	# return False
 	
 io = IOPorts()
 	
