@@ -59,6 +59,7 @@ def abfall():
 				
 				i=i+8
 				zeile = data[i]
+				#print(data[i])
 				datum[3] = "Abfall: "+zeile[20:-2]
 				r.append(datum)
 				i=i+7
@@ -79,10 +80,11 @@ termine.extend(wordpress())
 now = localtime()
 soon = localtime(time()+60*60*24*7)
 #print(now)
-#print(soon)
+print(soon)
 for term in termine:
-	#print(term)
-	if(term[0] >= now.tm_year and term[0] <= soon.tm_year and term[1] >= now.tm_mon and term[1] <= soon.tm_mon and term[2] >= now.tm_mday and term[2] <= soon.tm_mday):
+	print(term)
+	if((term[0] == now.tm_year and ((term[1] == now.tm_mon and term[2] >= now.tm_mday) or (term[1] > now.tm_mon))) or term[0] > now.tm_year) and ((term[0] == soon.tm_year and ((term[1] == soon.tm_mon and term[2] <= soon.tm_mday) or (term[1] < soon.tm_mon))) or term[0] < soon.tm_year):
+		print("+")
 		gesiebt.append(term)
 
 #print(gesiebt)
@@ -102,5 +104,3 @@ for s in sortiert:
 with open (c.INFPATH+"/Termine.txt", "w") as myfile:
 	myfile.truncate()
 	myfile.write(wif)
-
- 

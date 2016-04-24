@@ -36,8 +36,8 @@ def befehl(nick,msg):
 		param = b[1]
 	else:
 		param = '';
-	#try:
-	if True:
+	try:
+	#if True:
 		if b[0] == ':ponies':
 			jabber.sendTo("[PONIES] Ponies sind grad Feiern")
 		elif b[0] == ':toast':
@@ -47,14 +47,12 @@ def befehl(nick,msg):
 			makeTrains(nick)
 		elif b[0] == ':countdown':
 			thread(makeCountdown,(nick,param))	
-	#except:
-	#	pass
+	except:
+		pass
 	
 def makeTrains(nick):
 	global lastTrain
 	global jabber
-	
-	print("TRAINS")
 
 	if lastTrain < (time()-300):
 		lastTrain = time()
@@ -67,7 +65,7 @@ def makeTrains(nick):
 		, "Zugtüren lassen sich nicht schließen."
 		, "Zug heute in umgekehrter Reihenfolge."
 		, "Zug heute abweichend von Gleis 2 auf Gleis 238."
-		, "Zugbeleuchtung wurde auf halbdunkel gestellt,damit wir noch genug strom für die Klimaanlagen haben."
+		, "Zugbeleuchtung wurde auf halbdunkel gestellt,damit wir noch genug Strom für die Klimaanlagen haben."
 		, "Bitte stellen sie keine Gepäckstücke vor die Türen, diese dienen dem Zugpersonal als Fluchtweg."
 		, "Sehr geehrte Fahrgäste, heute bekommen sie für ihr Geld 20Minuten mehr Fahrzeit geboten."
 		, "Sollten sie auf der Suche nach Wagen 9 sein, den haben wir heute ganz geschickt zwischen Wagen 5 und 6 versteckt."
@@ -75,7 +73,7 @@ def makeTrains(nick):
 		, "Bitte nehmen sie Ihre Regenschirme wieder mit. Die Bahn hat mittlerweile ausreichend."
 		, "Im gesamten Zug herrscht absolutes Nichtraucherverbot.")
 
-		jabber.sendTo("[TRAIN] "+ antw[randrange(0,len(antw))])
+		jabber.sendTo("[TRAIN] "+ antw[randrange(0,len(antw)-1)])
 	
 # zeigt den countdown mit low prio (bedeutet, wenn tost kommt wird der countdown ausgesetzt)
 def makeCountdown(nick,timecode):
@@ -345,7 +343,7 @@ class IOPorts():
 			
 			sleep(5)
 			# in chat schreiben, dass space offen
-			sendMsg("--- Der Space ist nun geffnet.")
+			sendMsg("--- Der Space ist nun geöffnet.")
 			debugMsg("Space offen")
 		lastStatus = time() #TODO
 
