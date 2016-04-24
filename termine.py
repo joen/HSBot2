@@ -20,12 +20,9 @@ def wordpress():
 		for d in data:
 			d = d.strip()
 			ee = d.split('</h3><h3 class="entry-title">')
-			# print(ee)
-			# print("---------------------------------------------------")
 			if s == 2: 
 				try:
 					for e in ee:
-						print ("- "+e)
 						i_start = e.find(">",25)+1
 						i_stop = e.find("<",i_start)
 						j_start = e.find(">",i_stop)+1
@@ -56,7 +53,6 @@ def abfall():
 		n = len(data)
 		i = 0
 		while i<n:
-			#print(i)
 			if data[i].startswith("DTSTART;VALUE=DATE:"):
 				zeile = data[i]
 				datum = [int(zeile[19:23]),int(zeile[23:25]),int(zeile[25:27]),""]

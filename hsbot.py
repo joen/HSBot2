@@ -5,7 +5,7 @@ from thread import start_new_thread as thread
 from subprocess import call
 from time import sleep,localtime,time
 from Tkinter import *
-from random import randint
+from random import randint,randrange
 
 import sleekxmpp
 from optparse import OptionParser
@@ -18,8 +18,8 @@ import paho.mqtt.publish as mospub
 
 import config as c
 
-lastStatus = 0 # wann das letzte mal der space status ge‰ndert wurde
-prioToast = False # wenn ein priorit‰ts Toast da ist werden sachen wie countdown ausgeblendet
+lastStatus = 0 # wann das letzte mal der space status ge√§ndert wurde
+prioToast = False # wenn ein priorit√§ts Toast da ist werden sachen wie countdown ausgeblendet
 lastTrain = 0 #letzter Zeug
 
 #gpio einstellungen
@@ -36,38 +36,44 @@ def befehl(nick,msg):
 		param = b[1]
 	else:
 		param = '';
-	try:
+	#try:
+	if True:
 		if b[0] == ':ponies':
 			jabber.sendTo("[PONIES] Ponies sind grad Feiern")
 		elif b[0] == ':toast':
 			jabber.sendTo("[TOAST] "+ nick +" mag Toast")
 			thread(makeToast,(param,10))
 		elif b[0] == ':trains':
-			thread(makeTrains())
+			makeTrains(nick)
 		elif b[0] == ':countdown':
 			thread(makeCountdown,(nick,param))	
-	except:
-		pass
+	#except:
+	#	pass
 	
-def makeTrains():
+def makeTrains(nick):
+	global lastTrain
+	global jabber
+	
+	print("TRAINS")
+
 	if lastTrain < (time()-300):
 		lastTrain = time()
-		jabber.sendTo(nick +" mag Z¸ge")
+		jabber.sendTo("[TRAIN] "+ nick +" mag Z√ºge")
 	else:
-		antw[0] = "Zug hat versp‰tung."
-		antw[1] = "Zug macht Pause."
-		antw[2] = "Zug hat keine Lust."
-		antw[3] = "Im Zug ist die Heizung ausgefallen."
-		antw[4] = "Zugt¸ren lassen sich nicht schlieﬂen."
-		antw[5] = "Zug heute in umgekehrter Reihenfolge."
-		antw[6] = "Zug heute abweichend von Gleis 2 auf Gleis 238."
-		antw[7] = "Zugbeleuchtung wurde auf halbdunkel gestellt,damit wir noch genug strom f¸r die Klimaanlagen haben."
-		antw[8] = "Bitte stellen sie keine Gep‰ckst¸cke vor die T¸ren, diese dienen dem Zugpersonal als Fluchtweg."
-		antw[9] = "Sehr geehrte Fahrg‰ste, heute bekommen sie f¸r ihr Geld 20Minuten mehr Fahrzeit geboten."
-		antw[10] = "Sollten sie auf der Suche nach Wagen 9 sein, den haben wir heute ganz geschickt zwischen Wagen 5 und 6 versteckt."
-		antw[11] = "Weitere Informationen entnehmen sie bitte dem Zugpersonal."
-		antw[12] = "Bitte nehmen sie Ihre Regenschirme wieder mit. Die Bahn hat mittlerweile ausreichend."
-		antw[13] = "Im gesamten Zug herrscht absolutes Nichtraucherverbot."
+		antw = ("Zug hat versp√§tung."
+		, "Zug macht Pause."
+		, "Zug hat keine Lust."
+		, "Im Zug ist die Heizung ausgefallen."
+		, "Zugt√ºren lassen sich nicht schlie√üen."
+		, "Zug heute in umgekehrter Reihenfolge."
+		, "Zug heute abweichend von Gleis 2 auf Gleis 238."
+		, "Zugbeleuchtung wurde auf halbdunkel gestellt,damit wir noch genug strom f√ºr die Klimaanlagen haben."
+		, "Bitte stellen sie keine Gep√§ckst√ºcke vor die T√ºren, diese dienen dem Zugpersonal als Fluchtweg."
+		, "Sehr geehrte Fahrg√§ste, heute bekommen sie f√ºr ihr Geld 20Minuten mehr Fahrzeit geboten."
+		, "Sollten sie auf der Suche nach Wagen 9 sein, den haben wir heute ganz geschickt zwischen Wagen 5 und 6 versteckt."
+		, "Weitere Informationen entnehmen sie bitte dem Zugpersonal."
+		, "Bitte nehmen sie Ihre Regenschirme wieder mit. Die Bahn hat mittlerweile ausreichend."
+		, "Im gesamten Zug herrscht absolutes Nichtraucherverbot.")
 
 		jabber.sendTo("[TRAIN] "+ antw[randrange(0,len(antw))])
 	
@@ -103,6 +109,7 @@ def makeToast(msg,time):
 	global to
 	global prioToast
 	
+	
 	prioToast = True
 	mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
 	to.set(str(msg))
@@ -111,12 +118,12 @@ def makeToast(msg,time):
 	toast.grid_remove()
 	prioToast = False
 
-#sendet zur¸ck welchen Status der Space grade hat	
+#sendet zurck welchen Status der Space grade hat	
 def makeStatus():
 	if g.input(15):
 		jabber.sendTo("[STATUS] Der Space ist aktuell geschlossen.")
 	else:
-		jabber.sendTo("[STATUS] Der Space ist aktuell geˆffnet.")
+		jabber.sendTo("[STATUS] Der Space ist aktuell geffnet.")
 		
 def setTopic(tpc):
 	pass
@@ -126,7 +133,7 @@ def setTopic(tpc):
 #		msg = nick+": "+msg
 	#todo
 
-# schliebs ne nachricht ¸ber mqtt topic debug
+# schliebs ne nachricht ber mqtt topic debug
 def debugMsg(msg,fkt='DEBUG'):
 	pl = "["+str(fkt)+"]: "+str(msg)
 	mospub.single(c.MQTTDEBU, payload=pl, hostname=c.MQTTSRV)
@@ -211,7 +218,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def sendTo(self,txt):
 		print("[XMPP] "+str(txt))
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
-		sendMsg(cJNICK +": "+ txt):
+		sendMsg(c.JNICK +": "+ txt)
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
@@ -232,7 +239,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 		#except:
 			pass
 			
-# diese klasse ¸berwacht alle GPIO ports und reagiert nach wunsch
+# diese klasse berwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
 	blinking = False
 
@@ -338,7 +345,7 @@ class IOPorts():
 			
 			sleep(5)
 			# in chat schreiben, dass space offen
-			sendMsg("--- Der Space ist nun geˆffnet.")
+			sendMsg("--- Der Space ist nun geffnet.")
 			debugMsg("Space offen")
 		lastStatus = time() #TODO
 
@@ -388,7 +395,7 @@ f.rowconfigure(2, minsize=548)
 
 data = "Chatfenster"
 
-# sorgt f¸r die uhr
+# sorgt fr die uhr
 def getClock():
 	global ts
 	while True:
