@@ -34,7 +34,7 @@
 			$f = str_replace('/','_',$_GET['f']);
 			if(isset($_POST['submit'])) {
 				$h = fopen('info/'.$f.'.txt','w');
-				$content = str_replace('\r','',$_POST['content']);
+				$content = str_replace("\r",'',$_POST['content']);
 				flock($h,2);
 				fputs($h, $content);
 				flock($h,3);

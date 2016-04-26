@@ -37,9 +37,10 @@ def befehl(nick,msg):
 	else:
 		param = '';
 	try:
-	#if True:
 		if b[0] == ':ponies':
 			jabber.sendTo("[PONIES] Ponies sind grad Feiern")
+		elif b[0] == ':status':
+			thread(makeStatus,())
 		elif b[0] == ':toast':
 			jabber.sendTo("[TOAST] "+ nick +" mag Toast")
 			thread(makeToast,(param,10))
