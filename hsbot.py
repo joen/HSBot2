@@ -117,6 +117,18 @@ def makeToast(msg,time):
 	sleep(time)
 	toast.grid_remove()
 	prioToast = False
+	
+#zeigt ein fullscreen bild
+def makeFullImg(img, sec):
+	global f
+	
+	photo = PhotoImage(file=os.path.dirname(os.path.realpath(__file__)) + img)
+	photo.zoom(8, 8)
+	fulli = Label(image=photo)
+	fulli.grid(row=0,column=0,rowspan=3,columnspan=3)
+	sleep(sec)
+	fulli.grid_remove()
+	
 
 #sendet zurück welchen Status der Space grade hat	
 def makeStatus():
@@ -154,14 +166,18 @@ class MQTT():
 			self.client.loop_forever()
 
 	def on_connect(self,client, userdata, flags, rc):
-		print("MQTT Start: "+str(rc))
+		#print("MQTT Start: "+str(rc))
 		self.client.subscribe(c.MQTTTOPI)
 		self.client.subscribe(c.MQTTTOPT)
+		self.client.subscribe("test")
 
 	def on_message(self,client, userdata, msg):
 		print("MQTT Msg: "+msg.topic+" "+str(msg.payload))
 		if(msg.topic == 'toast'):
 			makeToast(msg.payload,10)
+			
+		if msg.topic == 'test' and msg.payload == 'blue':
+			thread(makeFullImg,('/media/pony.png',1))
 		
 		if(msg.topic == 'chat'):
 			sendMsg("[MQTT]: "+str(msg.payload))
@@ -376,6 +392,7 @@ clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",1
 infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
 infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=19,width=22)	
 toast = Label(f,textvariable=to,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=8)
+
 
 chat.tag_add("all", "1.0", END)
 chat.tag_config("all",wrap=WORD)
