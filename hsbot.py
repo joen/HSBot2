@@ -59,6 +59,7 @@ def makeTrains(nick):
 		lastTrain = time()
 		jabber.sendTo("[TRAIN] "+ nick +" mag Züge")
 	else:
+		sleep(5)
 		antw = ("Zug hat verspätung."
 		, "Zug macht Pause."
 		, "Zug hat keine Lust."
@@ -72,7 +73,32 @@ def makeTrains(nick):
 		, "Sollten sie auf der Suche nach Wagen 9 sein, den haben wir heute ganz geschickt zwischen Wagen 5 und 6 versteckt."
 		, "Weitere Informationen entnehmen sie bitte dem Zugpersonal."
 		, "Bitte nehmen sie Ihre Regenschirme wieder mit. Die Bahn hat mittlerweile ausreichend."
-		, "Im gesamten Zug herrscht absolutes Nichtraucherverbot.")
+		, "Im gesamten Zug herrscht absolutes Nichtraucherverbot."
+		, "For Anschluss-Connections please listen to the Lautsprecheransagen"
+		, "Ich bitte um Gehör: die 8 Minuten für das Baguette sind um."
+		, "Liebe Fahrgäste, heute steht das S in S-Bahn für schleichen!"
+		, "Wir haben den Bahnhof mit Verspätung verlassen, da die Verkehrsleitung mir nicht gesagt hat, dass ich diesen Zug fahren darf."
+		, "Bitte niemand aussteigen! Außer die Frau, die eigentlich nach Nürtingen will. Die darf."
+		, "Der Zug verspätet sich auf Grund eines liegen gebliebenen Zugbegleiters."
+		, "Bitte beachten Sie: W-Lan benötigt keine Steckverbindung."
+		, "Für alle neu zugestiegenen Fahrgäste ohne Platzreservierung: willkommen auf unserer Stehparty!"
+		, "Der Zug vor uns hat zwar 800 PS mehr als wir, aber dafür fünf Türen weniger. Da dauert das Ein- und Aussteigen!"
+		, "Denken Sie an Pinguine! Dann ist die kaputte Klimaanlage nicht so schlimm."
+		, "Weil 50 Leute an einer Tür einsteigen, verzögert sich die Abfahrt. Wir bitten diese Dummheit zu entschuldigen."
+		, "Durch eine äußerst seltene Verkettung glücklicher Umstände werden wir unser Ziel unerwartet plangemäß erreichen."
+		, "Auf Klo 1 bitte den richtigen Spülknopf benutzen und nicht permanent den Notfall-Knopf drücken!"
+		, "Wenn die Damen die Modenschau unterlassen und die Tüten aus den Türen nehmen würden, könnten wir weiterfahren."
+		, "Nachdem wir uns den Güterbahnhof Wanne-Eickel angucken durften, jetzt noch der Exklusiv-Anblick eines Güterzuges vor uns."
+		, "Soeben ist unsere ofenfrische Brezelverkäuferin zugestiegen. Sie möchte Sie im Speisewagen gerne erwarten."
+		, "Reisende, die sportlich unterwegs sind und nicht zu viel Gepäck haben, sollten den Anschlusszug noch erreichen."
+		, "Müll und Ehemänner bitte nicht im Zug zurücklassen! Vielen Dank."
+		, "Das ist nicht der Knopf für die Freisprechanlage. - Doch. Wenn ich's dir doch sage. Das ist der Knopf!"
+		, "Dies ist ein Personenzug, kein Güterzug. Im Güterzug ist es egal, wenn die Schweine ihre Beine oben haben. Hier nicht!"
+		, "Wenn Ihre Kopfhörer nicht dicht sind, schalten Sie das Geschrammel lieber ab. Sonst drehe ICH mal auf!"
+		, "Guten Tag meine Damen und Herren, im Namen der Deutschen Bahn muss ich Sie auf der Reise im Zug nach Köln begrüßen."
+		, "Ich weise darauf hin, dass unsere Bremsen nicht funktionieren. Nächster Halt? Dort wo wir ausgerollt sind!"
+		, "Der Zug des Lokführers ist ausgefallen. Er kommt jetzt mit dem Taxi."
+		, "Die Kollegen im Bistro geben wieder alles. Ich habe vorhin ein Stück Kuchen gegessen und würde Ihnen raten, das auch zu tun.")
 
 		jabber.sendTo("[TRAIN] "+ antw[randrange(0,len(antw)-1)])
 	
