@@ -1,0 +1,11 @@
+:toast 
+Zeigt ca ein wort an
+
+:countdown 
+zeigt einen countdown an
+
+:trains 
+du magst Züge
+
+:status 
+gibt im chat den Space status an
