@@ -38,6 +38,7 @@ def befehl(nick,msg):
 		param = '';
 	try:
 		if b[0] == ':ponies':
+			thread(makeFullImg,('/media/pony.png',10))
 			jabber.sendTo("[PONIES] Ponies sind grad Feiern")
 		elif b[0] == ':status':
 			thread(makeStatus,())
@@ -149,7 +150,6 @@ def makeFullImg(img, sec):
 	global f
 	
 	photo = PhotoImage(file=os.path.dirname(os.path.realpath(__file__)) + img)
-	photo.zoom(8, 8)
 	fulli = Label(image=photo)
 	fulli.grid(row=0,column=0,rowspan=3,columnspan=3)
 	sleep(sec)
@@ -203,7 +203,7 @@ class MQTT():
 			makeToast(msg.payload,10)
 			
 		if msg.topic == 'test' and msg.payload == 'blue':
-			thread(makeFullImg,('/media/pony.png',1))
+			thread(makeFullImg,('/media/bluescreen.png',10))
 		
 		if(msg.topic == 'chat'):
 			sendMsg("[MQTT]: "+str(msg.payload))
@@ -325,6 +325,7 @@ class IOPorts():
 		else:
 			#monitor on 
 			call(["./monitor.sh","on"])
+			thread(makeFullImg,('/media/bluescreen.png',10))
 			# etwas show
 			#jabber.disconnect()
 			g.output(11,1)
@@ -394,6 +395,7 @@ class IOPorts():
 f = Tk()
 h = f.winfo_screenheight()
 w = f.winfo_screenwidth()
+print(w,h)
 
 #Fenster
 f.title('HSBot2')
