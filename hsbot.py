@@ -275,7 +275,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 		#try:
 			if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
 				t = localtime()
-				sendMsg(msg['mucnick'] +" "+ str(t[3])+":"+ str(t[4])+":"+ str(t[5]) +" "+ str(t[2]) +"."+ str(t[1]) +". -----\n"+msg['body'])
+				sendMsg("----- "+ msg['mucnick'] +" "+ str(t[3])+":"+ str(t[4])+":"+ str(t[5]) +" "+ str(t[2]) +"."+ str(t[1]) +". -----\n"+msg['body'])
 				if msg['body'].startswith(':'):
 					befehl(msg['mucnick'],msg['body'])
 		#except:
