@@ -1,3 +1,5 @@
 ===== 6.5. ====
 Abfall: Bioabfallbehaelter
 Abfall: Wertstofftonne
+===== 11.5. ====
+Abfall: Restabfallbehaelter

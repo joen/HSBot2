@@ -11,7 +11,7 @@ import sleekxmpp
 from optparse import OptionParser
 
 import RPi.GPIO as g
-#import GPdummy as g
+#import GPdummy as g #brauch ich wenn ich per VM teste weils da kein GPIO gibt
 
 import paho.mqtt.client as mossub
 import paho.mqtt.publish as mospub
