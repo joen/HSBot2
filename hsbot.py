@@ -321,7 +321,7 @@ class IOPorts():
 			
 			
 			# in chat schreiben, dass spcae geschlossen
-			sendMsg("--- Der Space ist nun geschlossen.")
+			jabber.sendTo("[STATUS] Der Space ist nun geschlossen.")
 			debugMsg("Space geschlossen")
 		else:
 			#monitor on 
@@ -388,7 +388,7 @@ class IOPorts():
 			
 			sleep(5)
 			# in chat schreiben, dass space offen
-			sendMsg("--- Der Space ist nun geöffnet.")
+			jabber.sendTo("[STATUS] Der Space ist nun geöffnet.")
 			debugMsg("Space offen")
 		lastStatus = time() #TODO
 
