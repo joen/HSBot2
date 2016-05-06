@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from time import localtime,time
+from datetime import datetime as datetime
 import urllib3
 import config as c
 
@@ -92,9 +93,12 @@ sortiert = sorted(gesiebt, key=timer)
 #print(sortiert)
 wif = ''
 jetzt = [0,0,0]
+wday = ("Mo","Di","Mi","Do","Fr","Sa","So")
+
 for s in sortiert:
 	if(not (s[0] == jetzt[0] and s[1] == jetzt[1] and s[2] == jetzt[2])):
-		wif += "===== "+ str(s[2]) +"."+ str(s[1]) +". ====\n"
+		w = datetime(s[0], s[1], s[2], 12, 0, 0, 0).weekday()
+		wif += "=== "+ wday[w] +", "+ str(s[2]) +"."+ str(s[1]) +". ===\n"
 		jetzt[0] = s[0]
 		jetzt[1] = s[1]
 		jetzt[2] = s[2]
