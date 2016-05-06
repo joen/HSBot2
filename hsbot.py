@@ -491,11 +491,14 @@ def getInfo():
 #sendet nachricht an display	
 def sendMsg(msg):
 	global chat
-	chat.insert(END, msg + "\n")
-	chat.tag_add("all", "1.0", END)
-	chat.see(END)
-	chat.update()
-	f.update_idletasks()
+	try:
+		chat.insert(END, msg + "\n")
+		chat.tag_add("all", "1.0", END)
+		chat.see(END)
+		chat.update()
+		f.update_idletasks()
+	except:
+		pass
 	
 io = IOPorts()
 	
