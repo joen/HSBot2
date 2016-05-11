@@ -16,6 +16,8 @@ if($_SERVER['REMOTE_USER'] == 'gastwlan'){
 	fputs($h,$pw);
 	flock($h,3);
 	fclose($h);
+	header('Content-type: plain/text');
+	header('Content-Disposition: attachment; filename="gastwlan.txt"');
 	echo $pw;
 	
 	
