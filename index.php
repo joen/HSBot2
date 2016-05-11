@@ -1,10 +1,30 @@
-<?php 
+<?php
+
+
+if($_SERVER['REMOTE_USER'] == 'gastwlan'){
+	$zeichen = "abcedfghijklmnopqrstuvwxyz0123456789";
+	$pw = "";
+
+	@mt_srand ((double) microtime() * 1000000);
+	for ($i = 0; $i < 12; $i++ ) {
+		$r = mt_rand(0,strlen($zeichen)-1);
+		$pw .= $zeichen{$r};
+	}
+	
+	$h = fopen('info/GastWLAN.txt',w);
+	flock($h,2);
+	fputs($h,$pw);
+	flock($h,3);
+	fclose($h);
+	echo $pw;
+	
+	
+}else{
 	error_reporting(E_ALL); 
 	ini_set('error_reporting', E_ALL);
-?>
-<html><head></head><body>
-<a href="index.php?a=infos">Infos</a><a href=""></a><hr/>
-<?php
+	echo '<html><head></head><body>
+		<a href="index.php?a=infos">Infos</a><a href=""></a><hr/>';
+
 	if(isset($_GET['a'])) {
 		$a = $_GET['a'];
 	}else{
@@ -60,4 +80,5 @@
 			</form';
 		}
 	}
+}
 ?>

@@ -1,6 +1,3 @@
-=== Fr, 6.5. ===
-Abfall: Bioabfallbehaelter
-Abfall: Wertstofftonne
 === Mi, 11.5. ===
 Abfall: Restabfallbehaelter
 === Do, 12.5. ===
