@@ -1,19 +1,17 @@
 <?php
-
-
 if($_SERVER['REMOTE_USER'] == 'gastwlan'){
 	$zeichen = "abcedfghijklmnopqrstuvwxyz0123456789";
 	$pw = "";
-
+	
 	@mt_srand ((double) microtime() * 1000000);
-	for ($i = 0; $i < 12; $i++ ) {
+	for ($i = 0; $i < 8; $i++ ) {
 		$r = mt_rand(0,strlen($zeichen)-1);
 		$pw .= $zeichen{$r};
 	}
-	
-	$h = fopen('info/GastWLAN.txt',w);
+
+	$h = fopen('cache/status.txt',w);
 	flock($h,2);
-	fputs($h,$pw);
+	fputs($h,'GAST-WLAN-Passwort: '. $pw);
 	flock($h,3);
 	fclose($h);
 	header('Content-type: plain/text');

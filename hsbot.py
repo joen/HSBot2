@@ -185,7 +185,10 @@ class MQTT():
 		self.client.on_connect = self.on_connect
 		self.client.on_message = self.on_message
 
-		self.client.connect(c.MQTTSRV, 1883, 60)
+		try:
+			self.client.connect(c.MQTTSRV, 1883, 60)
+		except:
+			pass
 		
 	def run(self):
 		while True:
@@ -433,12 +436,16 @@ ti.set("------------")
 to = StringVar()
 to.set("TOAST")
 
+st = StringVar()
+st.set("STATUS")
+
 #Textfelder
-chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=20,width=29)
+chat = Text(f,bg="#000000",fg="#ffffff",font=("Arial",32),bd=2,height=19,width=29)
 clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=5)
 infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("Arial",32))
 infot = Text(f,bg="#000000",fg="#ffffff",font=("Arial",24),bd=2,height=19,width=22)	
 toast = Label(f,textvariable=to,fg="#ffffff", bg="#000000", bd=2,font=("Arial",108),width=8)
+status = Label(f,textvariable=st,fg="#ffffff", bg="#000000", bd=2,font=("Arial",32))
 
 
 chat.tag_add("all", "1.0", END)
@@ -455,6 +462,9 @@ infoh.grid(row=1,column=1,sticky=S)
 infot.tag_config("all",wrap=WORD)
 infot.grid(row=2,column=1,sticky=SE)
 f.rowconfigure(2, minsize=548)
+
+#status fußzeile
+status.grid(row=3,column=0,columnspan=2,sticky=S)
 
 data = "Chatfenster"
 
@@ -487,6 +497,19 @@ def getInfo():
 			ti.set(j)
 			infot.update()
 			sleep(10)
+			
+def getStatus():
+	global st
+	while True:
+		try:
+			with open (c.CACPATH+"/status.txt", "r") as myfile:
+				tmp = " | ".join(myfile.readlines())
+				st.set(tmp)
+		except:
+			pass
+		sleep(60)
+		print("[SETSTATUS]")
+
 	
 #sendet nachricht an display	
 def sendMsg(msg):
@@ -504,11 +527,12 @@ io = IOPorts()
 	
 thread(getClock,())
 thread(getInfo,())
+thread(getStatus,())
 
-mqtt = MQTT()
+#mqtt = MQTT()
 jabber = Jabber()
 thread(jabber.run,())
-thread(mqtt.run,())
+#thread(mqtt.run,())
 
 
 
