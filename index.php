@@ -9,7 +9,7 @@ if($_SERVER['REMOTE_USER'] == 'gastwlan'){
 		$pw .= $zeichen{$r};
 	}
 
-	$h = fopen('cache/status.txt',w);
+	$h = fopen('cache/gwp.txt',w);
 	flock($h,2);
 	fputs($h,'GAST-WLAN-Passwort: '. $pw);
 	flock($h,3);

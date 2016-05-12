@@ -498,11 +498,11 @@ def getInfo():
 			infot.update()
 			sleep(10)
 			
-def getStatus():
+def getGWP():
 	global st
 	while True:
 		try:
-			with open (c.CACPATH+"/status.txt", "r") as myfile:
+			with open (c.CACPATH+"/gwp.txt", "r") as myfile:
 				tmp = " | ".join(myfile.readlines())
 				st.set(tmp)
 		except:
@@ -527,7 +527,7 @@ io = IOPorts()
 	
 thread(getClock,())
 thread(getInfo,())
-thread(getStatus,())
+thread(getGWP,())
 
 #mqtt = MQTT()
 jabber = Jabber()
