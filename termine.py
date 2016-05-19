@@ -3,7 +3,7 @@
 
 from time import localtime,time
 from datetime import datetime as datetime
-import urllib3
+import urllib3,json
 import config as c
 
 #callback func für sorter
@@ -14,35 +14,31 @@ def timer(inp):
 def wordpress():
 	ret = list()
 	http = urllib3.PoolManager()
-	r = http.request('GET', 'http://hackerspace-bielefeld.de/')
+	r = http.request('GET', 'https://blog.hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&xml=true')
 	if r.status == 200:
+		#data = json.loads(r.data)
 		data = r.data.split("\n")
-		s = 0
-		for d in data:
-			d = d.strip()
-			ee = d.split('</h3><h3 class="entry-title">')
-			if s == 2: 
-				try:
-					for e in ee:
-						i_start = e.find(">",25)+1
-						i_stop = e.find("<",i_start)
-						j_start = e.find(">",i_stop)+1
-						j_stop = e.find("<",j_start)
-						i = e[i_start:i_stop]
-						j = e[j_start:j_stop].split(', ')
-						time = j[0].split(".")
-						ret.append([int(time[2]),int(time[1]),int(time[0]),i+" "+j[1]])
-					break;
-				except:
-					pass
-					
-			if s == 1:
-				s=2
+		n = len(data)
+		i = 0
+		while i<n:
+			if data[i].startswith("<vevent>"):
+				i=i+6
+				while not data[i].startswith("<dtstart"):
+					i=i+1
+				s = data[i].find(">")
+				datum = [int(data[i][s+1:s+5]),int(data[i][s+5:s+7]),int(data[i][s+7:s+9]),""]
+				
+				while not data[i].startswith("<summary>"):
+					i=i+1
+				datum[3] = data[i][9:-11]
+				#print(datum)
+				ret.append(datum)
+			i=i+1
 			
-			if s == 0 and d == "<h2>Anstehende Veranstaltungen</h2>":
-				s=1
+
 		print(ret)
 		return ret
+		
 	else:
 		print("FEHLER")	
 	
@@ -79,7 +75,7 @@ termine.extend(abfall())
 termine.extend(wordpress())
 #print(termine)
 now = localtime()
-soon = localtime(time()+60*60*24*7)
+soon = localtime(time()+60*60*24*14)
 #print(now)
 print(soon)
 for term in termine:

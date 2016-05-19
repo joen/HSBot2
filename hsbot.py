@@ -184,13 +184,9 @@ class MQTT():
 		self.client = mossub.Client()
 		self.client.on_connect = self.on_connect
 		self.client.on_message = self.on_message
-
-		try:
-			self.client.connect(c.MQTTSRV, 1883, 60)
-		except:
-			pass
 		
 	def run(self):
+		self.client.connect(c.MQTTSRV, 1883, 60)
 		while True:
 			self.client.loop_forever()
 
@@ -529,10 +525,10 @@ thread(getClock,())
 thread(getInfo,())
 thread(getGWP,())
 
-#mqtt = MQTT()
+mqtt = MQTT()
 jabber = Jabber()
 thread(jabber.run,())
-#thread(mqtt.run,())
+thread(mqtt.run,())
 
 
 
