@@ -3,4 +3,7 @@ termine per web nachtragen
 :alert befehl (sowas wie timer)
 :announce <datum> (max 1woche) <text> (anmerkungen, so aller schwarzes brett)
 mehr pony sprüche
-trains gif
+trains gif drawn together
+schriftart ändern
+links margin
+

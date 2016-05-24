@@ -446,7 +446,7 @@ status = Label(f,textvariable=st,fg="#ffffff", bg="#000000", bd=2,font=("Arial",
 
 chat.tag_add("all", "1.0", END)
 chat.tag_config("all",wrap=WORD)
-chat.grid(row=0,column=0,rowspan=3,sticky=NW)
+chat.grid(row=0,column=0,rowspan=3,sticky=N,padx=7)
 
 # Clock
 clock.grid(row=0,column=1,sticky=NE)
