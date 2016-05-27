@@ -259,7 +259,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def sendTo(self,txt):
 		print("[XMPP] "+str(txt))
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
-		sendMsg(c.JNICK +": "+ txt)
+		sendMsg(txt,txt,"bot")
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
@@ -292,7 +292,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 				else:
 					s = str(s)
 					
-				sendMsg(""+h+":"+m+" "+ msg['mucnick'] +": \n"+msg['body'])
+				sendMsg(h+":"+m+" "+ msg['mucnick'] +": "+ msg['body'],h+":"+m+" "+ msg['mucnick'] +":","nick")
 				if msg['body'].startswith(':'):
 					befehl(msg['mucnick'],msg['body'])
 		#except:
@@ -448,6 +448,9 @@ status = Label(f,textvariable=st,fg="#ffffff", bg="#000000", bd=2,font=(font,32)
 
 chat.tag_add("all", "1.0", END)
 chat.tag_config("all",wrap=WORD)
+chat.tag_config('bot',foreground='#ddffdd')
+chat.tag_config('nick',foreground='#ddddff')
+chat.tag_config('sys',background='#007700')
 chat.grid(row=0,column=0,rowspan=3,sticky=N,padx=7)
 
 # Clock
@@ -469,10 +472,13 @@ data = "Chatfenster"
 # sorgt fr die uhr
 def getClock():
 	global ts
+	tag = (0,0,0)
 	while True:
 		lt = localtime()
 		ts.set("%02i:%02i" % (lt.tm_hour,lt.tm_min))
-		#f.update_idletasks()
+		if not tag == lt.tm_mday:
+			tag = lt.tm_mday
+			sendMsg("[CLOCK] --- "+ str(lt.tm_mday) +"."+ str(lt.tm_mon) +". ---------------------","[CLOCK] --- "+ str(lt.tm_mday) +"."+ str(lt.tm_mon) +". ---------------------","sys")
 		sleep(5)
 
 # cycelt infos durch
@@ -510,12 +516,17 @@ def getGWP():
 
 	
 #sendet nachricht an display	
-def sendMsg(msg):
+def sendMsg(msg,colstr=False,tag="nothing"):
 	global chat
 	try:
 		chat.insert(END, msg + "\n")
 		chat.tag_add("all", "1.0", END)
 		chat.see(END)
+		if colstr:
+			pos = chat.search(colstr,END,backwards=True)
+			epos = pos.split('.')[0] +'.'+ str(len(colstr))
+			#print(pos,epos)
+			chat.tag_add(tag,pos,epos)
 		chat.update()
 		f.update_idletasks()
 	except:

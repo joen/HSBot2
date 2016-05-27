@@ -1,6 +1,6 @@
 <?php
 if($_SERVER['REMOTE_USER'] == 'gastwlan'){
-	$zeichen = "abcedfghijklmnopqrstuvwxyz0123456789";
+	$zeichen = "abcedfghijkmnopqrstuvwxyz23456789";
 	$pw = "";
 	
 	@mt_srand ((double) microtime() * 1000000);
