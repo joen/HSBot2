@@ -438,10 +438,10 @@ st.set("STATUS")
 font = "Arial"
 
 #Textfelder
-chat = Text(f,bg="#000000",fg="#ffffff",font=("System",32),bd=2,height=19,width=29)
-clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=(font,108),width=5)
-infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=(font,32))
-infot = Text(f,bg="#000000",fg="#ffffff",font=(font,24),bd=2,height=19,width=22)	
+chat = Text(f,bg="#000000",fg="#ffffff",font=(font,32),bd=2,height=19,width=29)
+clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("CyberFunk",135),width=5)
+infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("fraulein hex",51))
+infot = Text(f,bg="#000000",fg="#ffffff",font=(font,24),bd=2,height=18,width=22)	
 toast = Label(f,textvariable=to,fg="#ffffff", bg="#000000", bd=2,font=(font,108),width=8)
 status = Label(f,textvariable=st,fg="#ffffff", bg="#000000", bd=2,font=(font,32))
 
