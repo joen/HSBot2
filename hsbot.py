@@ -21,6 +21,7 @@ import config as c
 lastStatus = 0 # wann das letzte mal der space status geändert wurde
 prioToast = False # wenn ein prioritäts Toast da ist werden sachen wie countdown ausgeblendet
 lastTrain = 0 #letzter Zeug
+lastMoin = 0 #wann das letzte mal begrüßt wurde
 
 #gpio einstellungen
 g.setwarnings(False)
@@ -51,7 +52,23 @@ def befehl(nick,msg):
 			thread(makeCountdown,(nick,param))	
 	except:
 		pass
-	
+		
+def makeMoin(nick):
+	global lastMoin
+	sleep(2)
+	try:
+		if nick in open(c.CACPATH+'/moin.txt').read():
+			if lastMoin < (time()-300):
+				jabber.sendTo("[GREETING] Hallo "+nick+"!")
+				lastMoin = time()
+		else:
+			with open(c.CACPATH+'/moin.txt', "a") as myfile:
+				myfile.write(nick+";")
+
+			jabber.sendTo("[GREETING] Hallo "+nick+". Ich bin hier der Bot. Was können wir für dich tun? Bitte bedenke, dass wir nicht immer sofort antworten können, bleib also einfach online, wir antworten schon früher oder später.")
+	except:
+		jabber.sendTo("[GREETING] Hi "+nick+"!")
+				
 def makeTrains(nick):
 	global lastTrain
 	global jabber
@@ -295,6 +312,11 @@ class Jabber(sleekxmpp.ClientXMPP):
 				sendMsg(h+":"+m+" "+ msg['mucnick'] +": "+ msg['body'],h+":"+m+" "+ msg['mucnick'] +":","nick")
 				if msg['body'].startswith(':'):
 					befehl(msg['mucnick'],msg['body'])
+				
+				l = msg['body'].lower()
+				if l.startswith("moin") or l.startswith("hallo") or l.startswith("guten tag") or l.startswith("nabend"):
+					makeMoin(msg['mucnick'])
+				
 		#except:
 			pass
 			
