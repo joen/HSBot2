@@ -59,13 +59,14 @@ def makeMoin(nick):
 	try:
 		if nick in open(c.CACPATH+'/moin.txt').read():
 			if lastMoin < (time()-300):
-				jabber.sendTo("[GREETING] Hallo "+nick+"!")
+				jabber.sendTo("[GREETING] Hallo")
 				lastMoin = time()
 		else:
 			with open(c.CACPATH+'/moin.txt', "a") as myfile:
 				myfile.write(nick+";")
 
 			jabber.sendTo("[GREETING] Hallo "+nick+". Ich bin hier der Bot. Was können wir für dich tun? Bitte bedenke, dass wir nicht immer sofort antworten können, bleib also einfach online, wir antworten schon früher oder später.")
+			lastMoin = time()
 	except:
 		jabber.sendTo("[GREETING] Hi "+nick+"!")
 				
@@ -155,7 +156,10 @@ def makeToast(msg,time):
 	
 	
 	prioToast = True
-	mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
+	try:
+		mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
+	except:
+		pass
 	to.set(str(msg))
 	toast.grid(row=0,column=0)
 	sleep(time)
@@ -314,7 +318,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 					befehl(msg['mucnick'],msg['body'])
 				
 				l = msg['body'].lower()
-				if l.startswith("moin") or l.startswith("hallo") or l.startswith("guten tag") or l.startswith("nabend"):
+				if l.startswith("moin") or l.startswith("hallo") or l.startswith("guten tag") or l.startswith("guten abend") or l.startswith("nabend") or l.startswith("hi "):
 					makeMoin(msg['mucnick'])
 				
 		#except:
