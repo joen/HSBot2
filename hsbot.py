@@ -526,7 +526,7 @@ def getInfo():
 			infot.tag_add("all", "1.0", END)
 			ti.set(j)
 			infot.update()
-			sleep(10)
+			sleep(30)
 			
 def getGWP():
 	global st
