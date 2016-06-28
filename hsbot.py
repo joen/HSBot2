@@ -245,6 +245,8 @@ class Jabber(sleekxmpp.ClientXMPP):
 		
 	def run(self):
 		self.newSession()
+		sleep(10)
+		self.sendTo("[STATUS] Reboot erfolgreich... (HSBot v"+c.VERSION+")")
 		while True:
 			sleep(30)
 			self.send_presence()
@@ -332,8 +334,19 @@ class IOPorts():
 		g.setup(11, g.OUT) #Botlampe
 		g.setup(15, g.IN, pull_up_down=g.PUD_UP) #Botschalter Hi=off
 		
+		if g.input(15):
+			#monitor off 
+			call(["./monitor.sh","off"])
+			g.output(11,0)
+		else:
+			#monitor on 
+			call(["./monitor.sh","on"])
+			g.output(11,1)
+			thread(makeFullImg,('/media/bluescreen.png',10))
+		
 		g.add_event_detect(15, g.BOTH, callback=self.makeSpaceStatus, bouncetime=300)
-	
+
+		
 	def blinking(self,interval,ratio):
 		while self.blinking:
 			a = interval*ratio

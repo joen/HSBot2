@@ -1,2 +1,3 @@
 # m h dom mon dow user  command
 1 0     * * *   pi      cd /home/pi/HSBot2/ && ./termine.py
+8 23	* * 1	root	reboot
