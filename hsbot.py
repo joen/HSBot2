@@ -140,8 +140,30 @@ def makeCountdown(nick,timecode):
 	if m > 0:
 		while m > 0:
 			if not prioToast:
+				mod = m%3600
+				std = (m-mod)/3600
+				sek = mod%60
+				min = (mod-sek)/60
+
+				c = ""
+				if std > 0:
+					if std < 10:
+						c = c+"0"+std+":"
+					else:
+						c = c+std+":"
+
+				if min < 10:
+					c = c+"0"+min+":"
+				else:
+					c = c+min+":"
+
+				if sek < 10
+					c = c+"0"+sek
+				else:
+					c = c+sek
+
 				toast.grid(row=0,column=0)
-				to.set(str(m))
+				to.set(str(c))
 			sleep(1)
 			print("[COUNTDOWN] "+ str(m))
 			m=m-1
