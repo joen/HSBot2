@@ -101,6 +101,6 @@ for s in sortiert:
 	
 	wif += str(s[3]) +"\n"
 	
-with open (c.INFPATH+"/Termine.txt", "w") as myfile:
+with open (c.INFPATH+"/TeRmInE.txt", "w") as myfile:
 	myfile.truncate()
 	myfile.write(wif)

@@ -148,19 +148,19 @@ def makeCountdown(nick,timecode):
 				c = ""
 				if std > 0:
 					if std < 10:
-						c = c+"0"+std+":"
+						c = c+"0"+str(std)+":"
 					else:
-						c = c+std+":"
+						c = c+str(std)+":"
 
 				if min < 10:
-					c = c+"0"+min+":"
+					c = c+"0"+str(min)+":"
 				else:
-					c = c+min+":"
+					c = c+str(min)+":"
 
-				if sek < 10
-					c = c+"0"+sek
+				if sek < 10:
+					c = c+"0"+str(sek)
 				else:
-					c = c+sek
+					c = c+str(sek)
 
 				toast.grid(row=0,column=0)
 				to.set(str(c))
