@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import json,os,thread,sys,logging,socket,json
+import json,os,sys,logging,socket
 from thread import start_new_thread as thread
 from subprocess import call
 from time import sleep,localtime,time
@@ -39,8 +39,7 @@ def befehl(nick,msg):
 		param = '';
 	try:
 		if b[0] == ':ponies':
-			thread(makeFullImg,('/media/pony.png',10))
-			jabber.sendTo("[PONIES] Ponies sind grad Feiern")
+			thread(makePony,())
 		elif b[0] == ':status':
 			thread(makeStatus,())
 		elif b[0] == ':toast':
@@ -50,6 +49,11 @@ def befehl(nick,msg):
 			makeTrains(nick)
 		elif b[0] == ':countdown':
 			thread(makeCountdown,(nick,param))	
+		elif b[0] == ':blink':
+			if param == '!':
+				io.blink_stop()
+			else:
+				io.blink_start(int(param),0.1)
 	except:
 		pass
 		
@@ -69,7 +73,11 @@ def makeMoin(nick):
 			lastMoin = time()
 	except:
 		jabber.sendTo("[GREETING] Hi "+nick+"!")
-				
+	
+def makePony():
+	jabber.sendTo("[PONIES] Ponies wurden an die USA ausgeliefert.")
+	makeFullImg('/media/pony.png',10)
+	
 def makeTrains(nick):
 	global lastTrain
 	global jabber
@@ -119,7 +127,6 @@ def makeTrains(nick):
 	, "Der Zug des Lokführers ist ausgefallen. Er kommt jetzt mit dem Taxi."
 	, "Die Kollegen im Bistro geben wieder alles. Ich habe vorhin ein Stück Kuchen gegessen und würde Ihnen raten, das auch zu tun.")
 	jabber.sendTo("[TRAIN] "+ antw[randrange(0,len(antw)-1)])
-
 
 # zeigt den countdown mit low prio (bedeutet, wenn tost kommt wird der countdown ausgesetzt)
 def makeCountdown(nick,timecode):
@@ -198,6 +205,22 @@ def makeFullImg(img, sec):
 	sleep(sec)
 	fulli.grid_remove()
 	
+# stellt gif animation einmal da
+def makeFullAni(img,wait=0.04):
+	global f
+	okay = True
+	num = 0
+	while okay:
+		try:
+			sleep(wait)
+			photo = PhotoImage(file=os.path.dirname(os.path.realpath(__file__)) + img, format="gif - {}".format(self.num))
+			fulli = Label(image=photo)
+			fulli.grid(row=0,column=0,rowspan=3,columnspan=3)
+			
+            num += 1
+		except:
+			okay = False
+	fulli.grid_remove()
 
 #sendet zurück welchen Status der Space grade hat	
 def makeStatus():
