@@ -1,13 +1,13 @@
 <?php
 if($_SERVER['REMOTE_USER'] == 'gastwlan'){
 	$zeichen = "abcedfghijkmnopqrstuvwxyz23456789";
-	$pw = "";
+	$pw = "GastimHS!";
 	
-	@mt_srand ((double) microtime() * 1000000);
+	/*@mt_srand ((double) microtime() * 1000000);
 	for ($i = 0; $i < 8; $i++ ) {
 		$r = mt_rand(0,strlen($zeichen)-1);
 		$pw .= $zeichen{$r};
-	}
+	}*/
 
 	$h = fopen('cache/gwp.txt',w);
 	flock($h,2);

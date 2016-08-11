@@ -213,11 +213,10 @@ def makeFullAni(img,wait=0.04):
 	while okay:
 		try:
 			sleep(wait)
-			photo = PhotoImage(file=os.path.dirname(os.path.realpath(__file__)) + img, format="gif - {}".format(self.num))
+			photo = PhotoImage(file=os.path.dirname(os.path.realpath(__file__)) + img, format="gif - {}".format(num))
 			fulli = Label(image=photo)
 			fulli.grid(row=0,column=0,rowspan=3,columnspan=3)
-			
-            num += 1
+			num += 1
 		except:
 			okay = False
 	fulli.grid_remove()
