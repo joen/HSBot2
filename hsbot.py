@@ -29,7 +29,6 @@ g.setmode(g.BOARD)
 
 # erkennt und verteilt befehle weiter
 def befehl(nick,msg):
-	FNAME = "./cache/pony.flv"
 	b = str(msg).split(" ",1)
 	b[0] = b[0].lower()
 	
@@ -75,8 +74,17 @@ def makeMoin(nick):
 		jabber.sendTo("[GREETING] Hi "+nick+"!")
 	
 def makePony():
-	jabber.sendTo("[PONIES] Ponies wurden an die USA ausgeliefert.")
-	makeFullImg('/media/pony.png',10)
+	x = 1
+	r = randrange(0,x)
+	if r == 0:
+		jabber.sendTo("[PONIES] Ponies wurden an die USA ausgeliefert.")
+		makeFullImg('/media/pony.png',10)
+	elif r == 1:
+		jabber.sendTo("[PONIES] Ponies!!!!!!")
+		makeFullAni('/media/pony1.gif')
+	elif r == 2:
+		jabber.sendTo("[PONIES] PONYPONYPONY")
+		makeFullAni('/media/pony2.gif')
 	
 def makeTrains(nick):
 	global lastTrain
@@ -210,15 +218,21 @@ def makeFullAni(img,wait=0.04):
 	global f
 	okay = True
 	num = 0
+	fulli = Label()
 	while okay:
 		try:
 			sleep(wait)
+			fulli.grid_remove()
 			photo = PhotoImage(file=os.path.dirname(os.path.realpath(__file__)) + img, format="gif - {}".format(num))
 			fulli = Label(image=photo)
 			fulli.grid(row=0,column=0,rowspan=3,columnspan=3)
+
 			num += 1
+			print("[GIF]"+img+" - "+str(num))
 		except:
 			okay = False
+			print("[GIF]"+img+" - end")
+
 	fulli.grid_remove()
 
 #sendet zurück welchen Status der Space grade hat	
