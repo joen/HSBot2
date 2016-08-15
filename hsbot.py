@@ -391,6 +391,7 @@ class IOPorts():
 	def __init__(self):
 		g.setup(11, g.OUT) #Botlampe
 		g.setup(15, g.IN, pull_up_down=g.PUD_UP) #Botschalter Hi=off
+		g.setup(13, g.IN, pull_up_down=g.PUD_UP) #Bottaster
 		
 		if g.input(15):
 			#monitor off 
@@ -403,8 +404,12 @@ class IOPorts():
 			thread(makeFullImg,('/media/bluescreen.png',10))
 		
 		g.add_event_detect(15, g.BOTH, callback=self.makeSpaceStatus, bouncetime=300)
-
+		g.add_event_detect(13, g.FALLING, callback=self.doPony,bouncetime=5000)
 		
+
+	def doPony(self,ch):
+		makePony()
+
 	def blinking(self,interval,ratio):
 		while self.blinking:
 			a = interval*ratio
