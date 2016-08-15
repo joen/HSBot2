@@ -218,14 +218,18 @@ def makeFullAni(img,wait=0.04):
 	global f
 	okay = True
 	num = 0
-	fulli = Label()
+
+	photo = PhotoImage(file=os.path.dirname(os.path.realpath(__file__)) + img, format="gif - {}".format(num))
+	fulli = Label(image=photo)
+	fulli.grid(row=0,column=0,rowspan=3,columnspan=3)
+	sleep(0.2)
+	
 	while okay:
 		try:
 			sleep(wait)
-			fulli.grid_remove()
 			photo = PhotoImage(file=os.path.dirname(os.path.realpath(__file__)) + img, format="gif - {}".format(num))
-			fulli = Label(image=photo)
-			fulli.grid(row=0,column=0,rowspan=3,columnspan=3)
+			fulli.configure(image = photo)
+			fulli.image = photo
 
 			num += 1
 			print("[GIF]"+img+" - "+str(num))
@@ -282,6 +286,9 @@ class MQTT():
 			
 		if msg.topic == 'test' and msg.payload == 'blue':
 			thread(makeFullImg,('/media/bluescreen.png',10))
+		
+		if msg.topic == 'test' and msg.payload == 'red':
+			thread(makeFullAni,('/media/test.gif',0.04))
 		
 		if(msg.topic == 'chat'):
 			sendMsg("[MQTT]: "+str(msg.payload))
