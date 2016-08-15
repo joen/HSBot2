@@ -292,7 +292,7 @@ class MQTT():
 		
 		if(msg.topic == 'chat'):
 			sendMsg("[MQTT]: "+str(msg.payload))
-		
+	
 	def incMsg(msg,nick=''):
 		pass
 
@@ -416,8 +416,10 @@ class IOPorts():
 		
 
 	def doPony(self,ch):
-		if lastPony < (time()-300):
-			lastPony = time()
+	
+		debugMsg(str(self.lastPony),'LASTPONY')
+		if self.lastPony < (time()-300):
+			self.lastPony = time()
 			makePony()
 
 	def blinking(self,interval,ratio):
