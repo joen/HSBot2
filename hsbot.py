@@ -394,6 +394,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 # diese klasse überwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
 	blinking = False
+	lastPony = 0
 
 	def __init__(self):
 		g.setup(11, g.OUT) #Botlampe
@@ -415,7 +416,9 @@ class IOPorts():
 		
 
 	def doPony(self,ch):
-		makePony()
+		if lastPony < (time()-300):
+			lastPony = time()
+			makePony()
 
 	def blinking(self,interval,ratio):
 		while self.blinking:
