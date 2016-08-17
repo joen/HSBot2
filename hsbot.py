@@ -180,7 +180,7 @@ def makeCountdown(nick,timecode):
 				toast.grid(row=0,column=0)
 				to.set(str(c))
 			sleep(1)
-			print("[COUNTDOWN] "+ str(m))
+			debugMsg("[COUNTDOWN] "+ str(m))
 			m=m-1
 		jabber.sendTo("[COUNTDOWN] @"+nick +" Dein Countdown ist abgelaufen.")
 		toast.grid_remove()
@@ -232,10 +232,10 @@ def makeFullAni(img,wait=0.04):
 			fulli.image = photo
 
 			num += 1
-			print("[GIF]"+img+" - "+str(num))
+			debugMsg("[GIF]"+img+" - "+str(num))
 		except:
 			okay = False
-			print("[GIF]"+img+" - end")
+			debugMsg("[GIF]"+img+" - end")
 
 	fulli.grid_remove()
 
@@ -255,7 +255,7 @@ def setTopic(tpc):
 	#todo
 
 # schliebs ne nachricht über mqtt topic debug
-def debugMsg(msg,fkt='DEBUG'):
+def debugMsg(msg,fkt='DEBUG-BOT'):
 	pl = "["+str(fkt)+"]: "+str(msg)
 	mospub.single(c.MQTTDEBU, payload=pl, hostname=c.MQTTSRV)
 
@@ -274,13 +274,13 @@ class MQTT():
 			self.client.loop_forever()
 
 	def on_connect(self,client, userdata, flags, rc):
-		#print("MQTT Start: "+str(rc))
+		debugMsg("MQTT Start: "+str(rc))
 		self.client.subscribe(c.MQTTTOPI)
 		self.client.subscribe(c.MQTTTOPT)
 		self.client.subscribe("test")
 
 	def on_message(self,client, userdata, msg):
-		print("MQTT Msg: "+msg.topic+" "+str(msg.payload))
+		debugMsg("MQTT Msg: "+msg.topic+" "+str(msg.payload))
 		if(msg.topic == 'toast'):
 			makeToast(msg.payload,10)
 			
@@ -329,25 +329,31 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.add_event_handler("presence_available",self.onPresence)
 				
 	def onStart(self, event):
-		print('[start]')
+		debugMsg('[start]')
 		self.get_roster()
 		self.send_presence()
 		self.plugin['xep_0045'].joinMUC(c.JROOM, c.JNICK,wait=True)		
 		
 	def onPresence(self,event):
-		print('[presence]'+str(event['from'].bare))
+		debugMsg('[presence]'+str(event['from'].bare))
 		if event['from'].bare == c.JUSER:
 			#io.blink_stop()
-			print('[timeup]'+ str(time()))
+			debugMsg('[timeup]'+ str(time()))
 				
 	def onSubj(self,event):
 		if not event["muc"]["nick"] == c.JNICK:
 			self.changeSubj(False)
 		
 	def sendTo(self,txt):
+<<<<<<< HEAD
 		print("[XMPP] "+str(txt))
 		#self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
 		#sendMsg(txt,txt,"bot")
+=======
+		debugMsg("[XMPP] "+str(txt))
+		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
+		sendMsg(txt,txt,"bot")
+>>>>>>> refs/remotes/origin/master
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
@@ -527,7 +533,7 @@ class IOPorts():
 f = Tk()
 h = f.winfo_screenheight()
 w = f.winfo_screenwidth()
-print(w,h)
+debugMsg(w,h)
 
 #Fenster
 f.title('HSBot2')
@@ -626,7 +632,7 @@ def getGWP():
 		except:
 			pass
 		sleep(60)
-		print("[SETSTATUS]")
+		debugMsg("[SETSTATUS]")
 
 	
 #sendet nachricht an display	
@@ -639,7 +645,7 @@ def sendMsg(msg,colstr=False,tag="nothing"):
 		if colstr:
 			pos = chat.search(colstr,END,backwards=True)
 			epos = pos.split('.')[0] +'.'+ str(len(colstr))
-			#print(pos,epos)
+			debugMsg(pos,epos)
 			chat.tag_add(tag,pos,epos)
 		chat.update()
 		f.update_idletasks()
