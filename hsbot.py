@@ -346,8 +346,8 @@ class Jabber(sleekxmpp.ClientXMPP):
 		
 	def sendTo(self,txt):
 		print("[XMPP] "+str(txt))
-		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
-		sendMsg(txt,txt,"bot")
+		#self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
+		#sendMsg(txt,txt,"bot")
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
