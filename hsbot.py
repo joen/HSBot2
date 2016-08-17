@@ -345,15 +345,10 @@ class Jabber(sleekxmpp.ClientXMPP):
 			self.changeSubj(False)
 		
 	def sendTo(self,txt):
-<<<<<<< HEAD
-		print("[XMPP] "+str(txt))
 		#self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
 		#sendMsg(txt,txt,"bot")
-=======
 		debugMsg("[XMPP] "+str(txt))
-		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
-		sendMsg(txt,txt,"bot")
->>>>>>> refs/remotes/origin/master
+
 		
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
