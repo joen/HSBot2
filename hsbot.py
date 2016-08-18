@@ -335,10 +335,10 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.plugin['xep_0045'].joinMUC(c.JROOM, c.JNICK,wait=True)		
 		
 	def onPresence(self,event):
-		debugMsg('[presence]'+str(event['from'].bare))
+		#debugMsg('[presence]'+str(event['from'].bare))
 		if event['from'].bare == c.JUSER:
 			#io.blink_stop()
-			debugMsg('[timeup]'+ str(time()))
+			#debugMsg('[timeup]'+ str(time()))
 				
 	def onSubj(self,event):
 		if not event["muc"]["nick"] == c.JNICK:
@@ -513,6 +513,7 @@ class IOPorts():
 			#jabber.newSession()
 			# spacestatus open
 			call(['curl','-d status=open', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
+
 			
 			# port 11 on
 			g.output(11,1)
@@ -626,7 +627,7 @@ def getGWP():
 		except:
 			pass
 		sleep(60)
-		debugMsg("[SETSTATUS]")
+		#debugMsg("[SETSTATUS]")
 
 	
 #sendet nachricht an display	
