@@ -337,6 +337,7 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def onPresence(self,event):
 		#debugMsg('[presence]'+str(event['from'].bare))
 		if event['from'].bare == c.JUSER:
+			pass
 			#io.blink_stop()
 			#debugMsg('[timeup]'+ str(time()))
 				
