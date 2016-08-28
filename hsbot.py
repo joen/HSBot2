@@ -413,11 +413,10 @@ class IOPorts():
 			thread(makeFullImg,('/media/bluescreen.png',10))
 		
 		g.add_event_detect(15, g.BOTH, callback=self.makeSpaceStatus, bouncetime=300)
-		g.add_event_detect(13, g.FALLING, callback=self.doPony,bouncetime=5000)
+		g.add_event_detect(13, g.FALLING, callback=self.doPony,bouncetime=30000)
 		
 
 	def doPony(self,ch):
-	
 		debugMsg(str(self.lastPony),'LASTPONY')
 		if self.lastPony < (time()-300):
 			self.lastPony = time()
