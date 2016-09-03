@@ -22,6 +22,7 @@ lastStatus = 0 # wann das letzte mal der space status geändert wurde
 prioToast = False # wenn ein prioritäts Toast da ist werden sachen wie countdown ausgeblendet
 lastTrain = 0 #letzter Zeug
 lastMoin = 0 #wann das letzte mal begrüßt wurde
+noPony = 0 #Bis wann keine Ponychat nachrichten mehr kommen sollen
 
 #gpio einstellungen
 g.setwarnings(False)
@@ -38,7 +39,7 @@ def befehl(nick,msg):
 		param = '';
 	try:
 		if b[0] == ':ponies':
-			thread(makePony,())
+			thread(makePony,(param,))
 		elif b[0] == ':status':
 			thread(makeStatus,())
 		elif b[0] == ':toast':
@@ -73,19 +74,27 @@ def makeMoin(nick):
 	except:
 		jabber.sendTo("[GREETING] Hi "+nick+"!")
 	
-def makePony():
-	x = 1
-	r = randrange(0,x)
-	if r == 0:
-		jabber.sendTo("[PONIES] Ponies wurden an die USA ausgeliefert.")
-		makeFullImg('/media/pony.png',10)
-	elif r == 1:
-		jabber.sendTo("[PONIES] Ponies!!!!!!")
-		makeFullAni('/media/pony1.gif')
-	elif r == 2:
-		jabber.sendTo("[PONIES] PONYPONYPONY")
-		makeFullAni('/media/pony2.gif')
-	
+def makePony(p):
+	global noPony
+	if p = "!":
+		noPony = time() + 3600
+	else:
+		x = 1
+		r = randrange(0,x)
+		if r == 0:
+			if noPony < time():
+				jabber.sendTo("[PONIES] Ponies wurden an die USA ausgeliefert.")
+			makeFullImg('/media/pony.png',10)
+		elif r == 1:
+			if noPony < time():
+				jabber.sendTo("[PONIES] Ponies!!!!!!")
+			makeFullAni('/media/pony1.gif')
+		elif r == 2:
+			if noPony < time():
+				jabber.sendTo("[PONIES] PONYPONYPONY")
+			makeFullAni('/media/pony2.gif')
+		#TODO
+		
 def makeTrains(nick):
 	global lastTrain
 	global jabber
