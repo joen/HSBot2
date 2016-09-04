@@ -320,7 +320,8 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def run(self):
 		self.newSession()
 		sleep(10)
-		self.sendTo("[STATUS] Reboot erfolgreich... (HSBot v"+c.VERSION+")")
+		with vers = open('version.txt').read():
+			self.sendTo("[STATUS] Reboot erfolgreich... (HSBot "+vers+")")
 		while True:
 			sleep(30)
 			self.send_presence()
