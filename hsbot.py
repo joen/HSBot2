@@ -76,7 +76,7 @@ def makeMoin(nick):
 	
 def makePony(p):
 	global noPony
-	if p = "!":
+	if p == "!":
 		noPony = time() + 3600
 	else:
 		x = 1
@@ -320,8 +320,9 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def run(self):
 		self.newSession()
 		sleep(10)
-		with vers = open('version.txt').read():
-			self.sendTo("[STATUS] Reboot erfolgreich... (HSBot "+vers+")")
+		vers = open('version.txt').read()
+		self.sendTo("[STATUS] Reboot erfolgreich... (HSBot "+vers+")")
+		
 		while True:
 			sleep(30)
 			self.send_presence()
