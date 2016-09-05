@@ -431,7 +431,7 @@ class IOPorts():
 		debugMsg(str(self.lastPony),'LASTPONY')
 		if self.lastPony < (time()-10):
 			self.lastPony = time()
-			makePony()
+			makePony("")
 
 	def blinking(self,interval,ratio):
 		while self.blinking:
