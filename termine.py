@@ -12,9 +12,11 @@ def timer(inp):
 
 # holt termine vom wordpress
 def wordpress():
+	print "WORDPRESS"
 	ret = list()
 	http = urllib3.PoolManager()
-	r = http.request('GET', 'https://blog.hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&xml=true')
+	#r = http.request('GET', 'https://blog.hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&xml=true')
+	r = http.request('GET', 'https://hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&ai1ec_post_ids=1188&xml=true')
 	if r.status == 200:
 		#data = json.loads(r.data)
 		data = r.data.split("\n")
@@ -22,8 +24,8 @@ def wordpress():
 		i = 0
 		while i<n:
 			if data[i].startswith("<vevent>"):
-				i=i+6
-				while not data[i].startswith("<dtstart"):
+				i=i+2
+				while not data[i].startswith("<dtstamp"):
 					i=i+1
 				s = data[i].find(">")
 				datum = [int(data[i][s+1:s+5]),int(data[i][s+5:s+7]),int(data[i][s+7:s+9]),""]
@@ -90,7 +92,7 @@ sortiert = sorted(gesiebt, key=timer)
 wif = ''
 jetzt = [0,0,0]
 wday = ("Mo","Di","Mi","Do","Fr","Sa","So")
-
+print("REDUZIEREN")
 for s in sortiert:
 	if(not (s[0] == jetzt[0] and s[1] == jetzt[1] and s[2] == jetzt[2])):
 		w = datetime(s[0], s[1], s[2], 12, 0, 0, 0).weekday()
