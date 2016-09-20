@@ -16,7 +16,8 @@ def wordpress():
 	ret = list()
 	http = urllib3.PoolManager()
 	#r = http.request('GET', 'https://blog.hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&xml=true')
-	r = http.request('GET', 'https://hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&ai1ec_post_ids=1188&xml=true')
+	#r = http.request('GET', 'https://hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&ai1ec_post_ids=1188&xml=true')
+	r = http.request('GET', 'https://hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&xml=true')
 	if r.status == 200:
 		#data = json.loads(r.data)
 		data = r.data.split("\n")
@@ -25,7 +26,7 @@ def wordpress():
 		while i<n:
 			if data[i].startswith("<vevent>"):
 				i=i+2
-				while not data[i].startswith("<dtstamp"):
+				while not data[i].startswith("<dtstart"):
 					i=i+1
 				s = data[i].find(">")
 				datum = [int(data[i][s+1:s+5]),int(data[i][s+5:s+7]),int(data[i][s+7:s+9]),""]
