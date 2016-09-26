@@ -22,6 +22,7 @@ lastStatus = 0 # wann das letzte mal der space status geändert wurde
 prioToast = False # wenn ein prioritäts Toast da ist werden sachen wie countdown ausgeblendet
 lastTrain = 0 #letzter Zeug
 lastMoin = 0 #wann das letzte mal begrüßt wurde
+noPony = 0 #Bis wann keine Ponychat nachrichten mehr kommen sollen
 
 #gpio einstellungen
 g.setwarnings(False)
@@ -38,7 +39,7 @@ def befehl(nick,msg):
 		param = '';
 	try:
 		if b[0] == ':ponies':
-			thread(makePony,())
+			thread(makePony,(param,))
 		elif b[0] == ':status':
 			thread(makeStatus,())
 		elif b[0] == ':toast':
@@ -73,19 +74,27 @@ def makeMoin(nick):
 	except:
 		jabber.sendTo("[GREETING] Hi "+nick+"!")
 	
-def makePony():
-	x = 1
-	r = randrange(0,x)
-	if r == 0:
-		jabber.sendTo("[PONIES] Ponies wurden an die USA ausgeliefert.")
-		makeFullImg('/media/pony.png',10)
-	elif r == 1:
-		jabber.sendTo("[PONIES] Ponies!!!!!!")
-		makeFullAni('/media/pony1.gif')
-	elif r == 2:
-		jabber.sendTo("[PONIES] PONYPONYPONY")
-		makeFullAni('/media/pony2.gif')
-	
+def makePony(p):
+	global noPony
+	if p == "!":
+		noPony = time() + 3600
+	else:
+		x = 1
+		r = randrange(0,x)
+		if r == 0:
+			if noPony < time():
+				jabber.sendTo("[PONIES] Ponies wurden an die USA ausgeliefert.")
+			makeFullImg('/media/pony.png',10)
+		elif r == 1:
+			if noPony < time():
+				jabber.sendTo("[PONIES] Ponies!!!!!!")
+			makeFullAni('/media/pony1.gif')
+		elif r == 2:
+			if noPony < time():
+				jabber.sendTo("[PONIES] PONYPONYPONY")
+			makeFullAni('/media/pony2.gif')
+		#TODO
+		
 def makeTrains(nick):
 	global lastTrain
 	global jabber
@@ -311,7 +320,9 @@ class Jabber(sleekxmpp.ClientXMPP):
 	def run(self):
 		self.newSession()
 		sleep(10)
-		self.sendTo("[STATUS] Reboot erfolgreich... (HSBot v"+c.VERSION+")")
+		vers = open('version.txt').read()
+		self.sendTo("[STATUS] Reboot erfolgreich... (HSBot "+vers+")")
+		
 		while True:
 			sleep(30)
 			self.send_presence()
@@ -335,10 +346,11 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.plugin['xep_0045'].joinMUC(c.JROOM, c.JNICK,wait=True)		
 		
 	def onPresence(self,event):
-		debugMsg('[presence]'+str(event['from'].bare))
+		#debugMsg('[presence]'+str(event['from'].bare))
 		if event['from'].bare == c.JUSER:
+			pass
 			#io.blink_stop()
-			debugMsg('[timeup]'+ str(time()))
+			#debugMsg('[timeup]'+ str(time()))
 				
 	def onSubj(self,event):
 		if not event["muc"]["nick"] == c.JNICK:
@@ -413,15 +425,14 @@ class IOPorts():
 			thread(makeFullImg,('/media/bluescreen.png',10))
 		
 		g.add_event_detect(15, g.BOTH, callback=self.makeSpaceStatus, bouncetime=300)
-		g.add_event_detect(13, g.FALLING, callback=self.doPony,bouncetime=5000)
+		g.add_event_detect(13, g.FALLING, callback=self.doPony,bouncetime=30000)
 		
 
 	def doPony(self,ch):
-	
 		debugMsg(str(self.lastPony),'LASTPONY')
-		if self.lastPony < (time()-300):
+		if self.lastPony < (time()-10):
 			self.lastPony = time()
-			makePony()
+			makePony("")
 
 	def blinking(self,interval,ratio):
 		while self.blinking:
@@ -514,6 +525,7 @@ class IOPorts():
 			#jabber.newSession()
 			# spacestatus open
 			call(['curl','-d status=open', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
+
 			
 			# port 11 on
 			g.output(11,1)
@@ -627,7 +639,7 @@ def getGWP():
 		except:
 			pass
 		sleep(60)
-		debugMsg("[SETSTATUS]")
+		#debugMsg("[SETSTATUS]")
 
 	
 #sendet nachricht an display	
