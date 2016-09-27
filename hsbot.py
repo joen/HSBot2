@@ -13,8 +13,8 @@ from optparse import OptionParser
 import RPi.GPIO as g
 #import GPdummy as g #brauch ich wenn ich per VM teste weils da kein GPIO gibt
 
-import paho.mqtt.client as mossub
-import paho.mqtt.publish as mospub
+#import paho.mqtt.client as mossub
+#import paho.mqtt.publish as mospub
 
 import config as c
 
@@ -38,17 +38,13 @@ def befehl(nick,msg):
 	else:
 		param = '';
 	try:
-		if b[0] == ':ponies':
-			thread(makePony,(param,))
-		elif b[0] == ':status':
+		if b[0] == ':status':
 			thread(makeStatus,())
 		elif b[0] == ':toast':
-			jabber.sendTo("[TOAST] "+ nick +" mag Toast")
-			thread(makeToast,(param,10))
-		elif b[0] == ':trains':
-			makeTrains(nick)
+			thread(makeToast,(param,10))	
 		elif b[0] == ':countdown':
-			thread(makeCountdown,(nick,param))	
+			thread(makeCountdown,(nick,param))
+
 		elif b[0] == ':blink':
 			if param == '!':
 				io.blink_stop()
@@ -189,9 +185,9 @@ def makeCountdown(nick,timecode):
 				toast.grid(row=0,column=0)
 				to.set(str(c))
 			sleep(1)
-			debugMsg("[COUNTDOWN] "+ str(m))
+			#debugMsg("[COUNTDOWN] "+ str(m))
 			m=m-1
-		jabber.sendTo("[COUNTDOWN] @"+nick +" Dein Countdown ist abgelaufen.")
+		#jabber.sendTo("[COUNTDOWN] @"+nick +" Dein Countdown ist abgelaufen.")
 		toast.grid_remove()
 
 #sendet toast an display
@@ -250,10 +246,8 @@ def makeFullAni(img,wait=0.04):
 
 #sendet zurück welchen Status der Space grade hat	
 def makeStatus():
-	if g.input(15):
-		jabber.sendTo("[STATUS] Der Space ist aktuell geschlossen.")
-	else:
-		jabber.sendTo("[STATUS] Der Space ist aktuell geöffnet.")
+	print("status")
+	jabber.sendTo("[STATUS] Der MakerFaireStand ist aktuell geöffnet.")
 		
 def setTopic(tpc):
 	pass
@@ -266,44 +260,8 @@ def setTopic(tpc):
 # schliebs ne nachricht über mqtt topic debug
 def debugMsg(msg,fkt='DEBUG-BOT'):
 	pl = "["+str(fkt)+"]: "+str(msg)
-	mospub.single(c.MQTTDEBU, payload=pl, hostname=c.MQTTSRV)
+	#mospub.single(c.MQTTDEBU, payload=pl, hostname=c.MQTTSRV)
 
-#mosquito Klasse
-class MQTT():
-	client = mossub.Client()
-	
-	def __init__(self):
-		self.client = mossub.Client()
-		self.client.on_connect = self.on_connect
-		self.client.on_message = self.on_message
-		
-	def run(self):
-		self.client.connect(c.MQTTSRV, 1883, 60)
-		while True:
-			self.client.loop_forever()
-
-	def on_connect(self,client, userdata, flags, rc):
-		debugMsg("MQTT Start: "+str(rc))
-		self.client.subscribe(c.MQTTTOPI)
-		self.client.subscribe(c.MQTTTOPT)
-		self.client.subscribe("test")
-
-	def on_message(self,client, userdata, msg):
-		debugMsg("MQTT Msg: "+msg.topic+" "+str(msg.payload))
-		if(msg.topic == 'toast'):
-			makeToast(msg.payload,10)
-			
-		if msg.topic == 'test' and msg.payload == 'blue':
-			thread(makeFullImg,('/media/bluescreen.png',10))
-		
-		if msg.topic == 'test' and msg.payload == 'red':
-			thread(makeFullAni,('/media/test.gif',0.04))
-		
-		if(msg.topic == 'chat'):
-			sendMsg("[MQTT]: "+str(msg.payload))
-	
-	def incMsg(msg,nick=''):
-		pass
 
 # xmpp klasse
 class Jabber(sleekxmpp.ClientXMPP):
@@ -357,9 +315,9 @@ class Jabber(sleekxmpp.ClientXMPP):
 			self.changeSubj(False)
 		
 	def sendTo(self,txt):
-		#self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
-		#sendMsg(txt,txt,"bot")
-		debugMsg("[XMPP] "+str(txt))
+		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
+		sendMsg(txt,txt,"bot")
+		#debugMsg("[XMPP] "+str(txt))
 
 		
 	def sendPrivate(self,nick,text):
@@ -407,32 +365,33 @@ class Jabber(sleekxmpp.ClientXMPP):
 # diese klasse überwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
 	blinking = False
-	lastPony = 0
+	lastPony = False
 
 	def __init__(self):
 		g.setup(11, g.OUT) #Botlampe
 		g.setup(15, g.IN, pull_up_down=g.PUD_UP) #Botschalter Hi=off
 		g.setup(13, g.IN, pull_up_down=g.PUD_UP) #Bottaster
 		
-		if g.input(15):
-			#monitor off 
-			call(["./monitor.sh","off"])
-			g.output(11,0)
-		else:
-			#monitor on 
-			call(["./monitor.sh","on"])
-			g.output(11,1)
-			thread(makeFullImg,('/media/bluescreen.png',10))
+		#monitor on 
+		call(["./monitor.sh","on"])
+		g.output(11,1)
+		thread(makeFullImg,('/media/bluescreen.png',10))
 		
-		g.add_event_detect(15, g.BOTH, callback=self.makeSpaceStatus, bouncetime=300)
-		g.add_event_detect(13, g.FALLING, callback=self.doPony,bouncetime=30000)
+		#g.add_event_detect(15, g.BOTH, callback=self.makeSpaceStatus, bouncetime=300)
+		g.add_event_detect(13, g.BOTH, callback=self.doPony,bouncetime=100)
 		
 
 	def doPony(self,ch):
-		debugMsg(str(self.lastPony),'LASTPONY')
-		if self.lastPony < (time()-10):
-			self.lastPony = time()
-			makePony("")
+		if g.input(13):
+			if not self.lastPony:
+				makePony("")
+				self.lastPony = True
+				print("pony1")
+		else:
+			self.lastPony = False
+			print("pony0")
+
+
 
 	def blinking(self,interval,ratio):
 		while self.blinking:
@@ -457,14 +416,14 @@ class IOPorts():
 			sleep(5)
 			
 			# spacestatus close
-			call(['curl','-d status=close', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
+			#call(['curl','-d status=close', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
 			
 			# port 15 off
 			g.output(11,0)
 			
 			
 			# in chat schreiben, dass spcae geschlossen
-			jabber.sendTo("[STATUS] Der Space ist nun geschlossen.")
+			jabber.sendTo("[STATUS] Der MakerFairStand ist nun geschlossen.")
 			debugMsg("Space geschlossen")
 		else:
 			#monitor on 
@@ -524,7 +483,7 @@ class IOPorts():
 			
 			#jabber.newSession()
 			# spacestatus open
-			call(['curl','-d status=open', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
+			#call(['curl','-d status=open', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
 
 			
 			# port 11 on
@@ -532,7 +491,7 @@ class IOPorts():
 			
 			sleep(5)
 			# in chat schreiben, dass space offen
-			jabber.sendTo("[STATUS] Der Space ist nun geöffnet.")
+			jabber.sendTo("[STATUS] Der MakerFaireStand ist nun geöffnet.")
 			debugMsg("Space offen")
 		lastStatus = time() #TODO
 
@@ -540,6 +499,7 @@ class IOPorts():
 f = Tk()
 h = f.winfo_screenheight()
 w = f.winfo_screenwidth()
+print(w,h)
 debugMsg(w,h)
 
 #Fenster
@@ -566,7 +526,7 @@ font = "Arial"
 
 #Textfelder
 chat = Text(f,bg="#000000",fg="#ffffff",font=(font,32),bd=2,height=19,width=29)
-clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("CyberFunk",135),width=5)
+clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("CyberFunk",120),width=5)
 infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("fraulein hex",51))
 infot = Text(f,bg="#000000",fg="#ffffff",font=(font,24),bd=2,height=18,width=22)	
 toast = Label(f,textvariable=to,fg="#ffffff", bg="#000000", bd=2,font=(font,108),width=8)
@@ -633,7 +593,7 @@ def getGWP():
 	global st
 	while True:
 		try:
-			with open (c.CACPATH+"/gwp.txt", "r") as myfile:
+			with open (c.CACPATH+"/footer.txt", "r") as myfile:
 				tmp = " | ".join(myfile.readlines())
 				st.set(tmp)
 		except:
@@ -665,10 +625,10 @@ thread(getClock,())
 thread(getInfo,())
 thread(getGWP,())
 
-mqtt = MQTT()
+#mqtt = MQTT()
 jabber = Jabber()
 thread(jabber.run,())
-thread(mqtt.run,())
+#thread(mqtt.run,())
 
 
 
