@@ -390,19 +390,20 @@ class IOPorts():
 		thread(makeFullImg,('/media/bluescreen.png',10))
 		
 		#g.add_event_detect(15, g.BOTH, callback=self.makeSpaceStatus, bouncetime=300)
-		g.add_event_detect(13, g.BOTH, callback=self.doPony,bouncetime=100)
+		#g.add_event_detect(13, g.BOTH, callback=self.doPony,bouncetime=100)
 		
 
 	def doPony(self,ch):
-		if g.input(13):
-			if not self.lastPony:
-				makePony("")
-				self.lastPony = True
-				print("pony1")
-		else:
-			self.lastPony = False
-			print("pony0")
-
+		while True:
+			if g.input(13):
+				if not self.lastPony:
+					makePony("")
+					self.lastPony = True
+					print("pony1")
+			else:
+				self.lastPony = False
+				print("pony0")
+			sleep(1)
 
 
 	def blinking(self,interval,ratio):
@@ -632,7 +633,7 @@ def sendMsg(msg,colstr=False,tag="nothing"):
 		pass
 	
 io = IOPorts()
-	
+thread(io.doPony,(0,))
 thread(getClock,())
 thread(getInfo,())
 thread(getGWP,())
