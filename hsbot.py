@@ -75,7 +75,7 @@ def makePony(p):
 	if p == "!":
 		noPony = time() + 3600
 	else:
-		x = 1
+		x = 6
 		r = randrange(0,x)
 		if r == 0:
 			if noPony < time():
@@ -84,11 +84,23 @@ def makePony(p):
 		elif r == 1:
 			if noPony < time():
 				jabber.sendTo("[PONIES] Ponies!!!!!!")
-			makeFullAni('/media/pony1.gif')
+			makeFullImg('/media/pony2.png',10)
 		elif r == 2:
 			if noPony < time():
 				jabber.sendTo("[PONIES] PONYPONYPONY")
-			makeFullAni('/media/pony2.gif')
+			makeFullImg('/media/pony3.png',10)
+		elif r == 3:
+			if noPony < time():
+				jabber.sendTo("[PONIES] OHPony!!!")
+			makeFullImg('/media/pony4.png',10)
+		elif r == 4:
+			if noPony < time():
+				jabber.sendTo("[PONIES] ...")
+			makeFullImg('/media/pony5.png',10)
+		elif r == 5:
+			if noPony < time():
+				jabber.sendTo("[PONIES] PONY ATTACK")
+			makeFullImg('/media/pony6.png',10)
 		#TODO
 		
 def makeTrains(nick):

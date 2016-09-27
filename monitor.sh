@@ -18,7 +18,7 @@ elif [ $1 = "on" ]; then
 	/opt/vc/bin/tvservice -o
 	/opt/vc/bin/tvservice -p
 	xset dpms force on
-	unclutter -idle 0.01 -root &
+	#unclutter -idle 0.01 -root &
 else
 	echo usage: $(basename $0) "on|off"
 fi
