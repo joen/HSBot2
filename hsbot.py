@@ -399,10 +399,10 @@ class IOPorts():
 				if not self.lastPony:
 					makePony("")
 					self.lastPony = True
-					print("pony1")
+					#print("pony1")
 			else:
 				self.lastPony = False
-				print("pony0")
+				#print("pony0")
 			sleep(1)
 
 
