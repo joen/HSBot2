@@ -65,7 +65,7 @@ def makeMoin(nick):
 			with open(c.CACPATH+'/moin.txt', "a") as myfile:
 				myfile.write(nick+";")
 
-			jabber.sendTo("[GREETING] Hallo "+nick+". Ich bin hier der Bot. Was können wir für dich tun? Bitte bedenke, dass wir nicht immer sofort antworten können, bleib also einfach online, wir antworten schon früher oder später.")
+			#jabber.sendTo("[GREETING] Hallo "+nick+". Ich bin hier der Bot. Was können wir für dich tun? Bitte bedenke, dass wir nicht immer sofort antworten können, bleib also einfach online, wir antworten schon früher oder später.")
 			lastMoin = time()
 	except:
 		jabber.sendTo("[GREETING] Hi "+nick+"!")
