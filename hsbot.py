@@ -32,7 +32,7 @@ g.setmode(g.BOARD)
 def befehl(nick,msg):
 	b = str(msg).split(" ",1)
 	b[0] = b[0].lower()
-	
+
 	if len(b) == 2:
 		param = b[1]
 	else:
@@ -48,7 +48,9 @@ def befehl(nick,msg):
 		elif b[0] == ':trains':
 			makeTrains(nick)
 		elif b[0] == ':countdown':
-			thread(makeCountdown,(nick,param))	
+			thread(makeCountdown,(nick,param))
+		elif b[0] == ':summon':
+			thread(makeCeremony,(nick,param))
 		elif b[0] == ':blink':
 			if param == '!':
 				io.blink_stop()
@@ -56,7 +58,7 @@ def befehl(nick,msg):
 				io.blink_start(int(param),0.1)
 	except:
 		pass
-		
+
 def makeMoin(nick):
 	global lastMoin
 	sleep(2)
@@ -73,7 +75,7 @@ def makeMoin(nick):
 			lastMoin = time()
 	except:
 		jabber.sendTo("[GREETING] Hi "+nick+"!")
-	
+
 def makePony(p):
 	global noPony
 	if p == "!":
@@ -94,7 +96,7 @@ def makePony(p):
 				jabber.sendTo("[PONIES] PONYPONYPONY")
 			makeFullAni('/media/pony2.gif')
 		#TODO
-		
+
 def makeTrains(nick):
 	global lastTrain
 	global jabber
@@ -102,7 +104,7 @@ def makeTrains(nick):
 	if lastTrain < (time()-300):
 		lastTrain = time()
 		jabber.sendTo("[TRAIN] "+ nick +" mag Züge")
-	
+
 	sleep(5)
 	antw = ("Zug hat verspätung."
 	, "Zug macht Pause."
@@ -159,7 +161,7 @@ def makeCountdown(nick,timecode):
 		m = int(time[0])*60+int(time[1])
 	elif(l == 1):
 		m = int(time[0])
-	
+
 	#toast.grid_remove()
 	if m > 0:
 		while m > 0:
@@ -199,8 +201,8 @@ def makeToast(msg,time):
 	global toast
 	global to
 	global prioToast
-	
-	
+
+
 	prioToast = True
 	try:
 		mospub.single(c.MQTTTOPTOUT, payload=msg, hostname=c.MQTTSRV)
@@ -211,17 +213,17 @@ def makeToast(msg,time):
 	sleep(time)
 	toast.grid_remove()
 	prioToast = False
-	
+
 #zeigt ein fullscreen bild
 def makeFullImg(img, sec):
 	global f
-	
+
 	photo = PhotoImage(file=os.path.dirname(os.path.realpath(__file__)) + img)
 	fulli = Label(image=photo)
 	fulli.grid(row=0,column=0,rowspan=3,columnspan=3)
 	sleep(sec)
 	fulli.grid_remove()
-	
+
 # stellt gif animation einmal da
 def makeFullAni(img,wait=0.04):
 	global f
@@ -232,7 +234,7 @@ def makeFullAni(img,wait=0.04):
 	fulli = Label(image=photo)
 	fulli.grid(row=0,column=0,rowspan=3,columnspan=3)
 	sleep(0.2)
-	
+
 	while okay:
 		try:
 			sleep(wait)
@@ -248,16 +250,16 @@ def makeFullAni(img,wait=0.04):
 
 	fulli.grid_remove()
 
-#sendet zurück welchen Status der Space grade hat	
+#sendet zurück welchen Status der Space grade hat
 def makeStatus():
 	if g.input(15):
 		jabber.sendTo("[STATUS] Der Space ist aktuell geschlossen.")
 	else:
 		jabber.sendTo("[STATUS] Der Space ist aktuell geöffnet.")
-		
+
 def setTopic(tpc):
 	pass
-	
+
 #def incMsg(msg,nick=''):
 #	if not nick == '':
 #		msg = nick+": "+msg
@@ -272,16 +274,14 @@ def debugMsg(msg,fkt='DEBUG-BOT'):
 class MQTT():
 	client = mossub.Client()
 
-	print("MQTT start")	
 	def __init__(self):
 		self.client = mossub.Client()
 		self.client.on_connect = self.on_connect
 		self.client.on_message = self.on_message
-		
+
 	def run(self):
 		self.client.connect(c.MQTTSRV, 1883, 60)
 		while True:
-			print("MQTT loop")
 			self.client.loop_forever()
 
 	def on_connect(self,client, userdata, flags, rc):
@@ -292,18 +292,19 @@ class MQTT():
 
 	def on_message(self,client, userdata, msg):
 		debugMsg("MQTT Msg: "+msg.topic+" "+str(msg.payload))
-		if(msg.topic == c.MQTTTOPT):
+		if(msg.topic == 'toast'):
 			makeToast(msg.payload,10)
-			
+
 		if msg.topic == 'test' and msg.payload == 'blue':
 			thread(makeFullImg,('/media/bluescreen.png',10))
-			print("trigger Blue")
-		
+
 		if msg.topic == 'test' and msg.payload == 'red':
 			thread(makeFullAni,('/media/test.gif',0.04))
-			print("trigger Red")
 
-		if(msg.topic == c.MQTTTOPI):
+		if msg.topic == 'test' and msg.payload == 'virus':
+			thread(makeFullAni,('/media/id4-virus.gif',10))
+		
+		if(msg.topic == 'chat'):
 			sendMsg("[MQTT]: "+str(msg.payload))
 
 	def incMsg(msg,nick=''):
@@ -320,60 +321,60 @@ class Jabber(sleekxmpp.ClientXMPP):
 		self.register_plugin('xep_0030') # Service Discovery
 		self.register_plugin('xep_0045') # Multi-User Chat
 		self.register_plugin('xep_0199') # XMPP Ping
-		
+
 	def run(self):
 		self.newSession()
 		sleep(10)
 		vers = open('version.txt').read()
 		self.sendTo("[STATUS] Reboot erfolgreich... (HSBot "+vers+")")
-		
+
 		while True:
 			sleep(30)
 			self.send_presence()
-				
-	def newSession(self): 
+
+	def newSession(self):
 		while not self.connect():
 			sleep(0.1)
 		self.process()
 
-			
+
 		self.add_event_handler("session_start", self.onStart)
 		self.add_event_handler("groupchat_message", self.muc)
 		self.add_event_handler("diconnected", self.newSession)
 		#self.add_event_handler("groupchat_subject", self.onSubj)
 		self.add_event_handler("presence_available",self.onPresence)
-				
+
 	def onStart(self, event):
 		debugMsg('[start]')
 		self.get_roster()
 		self.send_presence()
-		self.plugin['xep_0045'].joinMUC(c.JROOM, c.JNICK,wait=True)		
-		
+		self.plugin['xep_0045'].joinMUC(c.JROOM, c.JNICK,wait=True)
+
 	def onPresence(self,event):
 		#debugMsg('[presence]'+str(event['from'].bare))
 		if event['from'].bare == c.JUSER:
 			pass
 			#io.blink_stop()
 			#debugMsg('[timeup]'+ str(time()))
-				
+
 	def onSubj(self,event):
 		if not event["muc"]["nick"] == c.JNICK:
 			self.changeSubj(False)
-		
+
 	def sendTo(self,txt):
 		debugMsg("[XMPP] "+str(txt))
 		self.send_message(mto=c.JROOM,mbody=txt,mtype='groupchat')
 		sendMsg(txt,txt,"bot")
-		
+
 	def sendPrivate(self,nick,text):
 		self.send_message(mto=c.JROOM+"/"+nick,mbody=txt,mtype='groupchat')
-		
+
 	def changeSubj(self,subj):
 		if subj:
 			self.TOPIC = str(subj)
 
 		self.send_raw("<message from='"+c.JROOM+"/"+c.JNICK+"' id='lh2bs617' to='"+c.JROOM+"' type='groupchat'><subject>"+self.TOPIC+"</subject></message>")
-		
+
 	def muc(self, msg):
 		#try:
 			if msg['mucnick'] != c.JNICK and msg['from'].bare.startswith(c.JROOM):
@@ -383,30 +384,30 @@ class Jabber(sleekxmpp.ClientXMPP):
 					h = "0"+ str(h)
 				else:
 					h = str(h)
-					
+
 				m = t[4]
 				if m < 10:
 					m = "0"+ str(m)
 				else:
 					m = str(m)
-					
+
 				s = t[5]
 				if s < 10:
 					s = "0"+ str(s)
 				else:
 					s = str(s)
-					
+
 				sendMsg(h+":"+m+" "+ msg['mucnick'] +": "+ msg['body'],h+":"+m+" "+ msg['mucnick'] +":","nick")
 				if msg['body'].startswith(':'):
 					befehl(msg['mucnick'],msg['body'])
-				
+
 				l = msg['body'].lower()
 				if l.startswith("moin") or l.startswith("hallo") or l.startswith("guten tag") or l.startswith("guten abend") or l.startswith("nabend") or l.startswith("hi ") or l.startswith("achja guten morgen"):
 					makeMoin(msg['mucnick'])
-				
+
 		#except:
 			pass
-			
+
 # diese klasse überwacht alle GPIO ports und reagiert nach wunsch
 class IOPorts():
 	blinking = False
@@ -416,20 +417,20 @@ class IOPorts():
 		g.setup(11, g.OUT) #Botlampe
 		g.setup(15, g.IN, pull_up_down=g.PUD_UP) #Botschalter Hi=off
 		g.setup(13, g.IN, pull_up_down=g.PUD_UP) #Bottaster
-		
+
 		if g.input(15):
-			#monitor off 
+			#monitor off
 			call(["./monitor.sh","off"])
 			g.output(11,0)
 		else:
-			#monitor on 
+			#monitor on
 			call(["./monitor.sh","on"])
 			g.output(11,1)
 			thread(makeFullImg,('/media/bluescreen.png',10))
-		
+
 		g.add_event_detect(15, g.BOTH, callback=self.makeSpaceStatus, bouncetime=300)
 		g.add_event_detect(13, g.FALLING, callback=self.doPony,bouncetime=30000)
-		
+
 
 	def doPony(self,ch):
 		debugMsg(str(self.lastPony),'LASTPONY')
@@ -445,32 +446,32 @@ class IOPorts():
 			sleep(a)
 			g.output(11,0)
 			sleep(b)
-		
+
 	def blink_start(self,interval,ratio=0.5):
 		self.blinking = True
 		thread(self.blinking,(interval,ratio))
 
 	def blink_stop(self):
 		self.blinking = False
-	
+
 	def makeSpaceStatus(self,ch):
 		if g.input(15):
-			#monitor on 
+			#monitor on
 			call(["./monitor.sh","off"])
 			sleep(5)
-			
+
 			# spacestatus close
 			call(['curl','-d status=close', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
-			
+
 			# port 15 off
 			g.output(11,0)
-			
-			
+
+
 			# in chat schreiben, dass spcae geschlossen
 			jabber.sendTo("[STATUS] Der Space ist nun geschlossen.")
 			debugMsg("Space geschlossen")
 		else:
-			#monitor on 
+			#monitor on
 			call(["./monitor.sh","on"])
 			thread(makeFullImg,('/media/bluescreen.png',10))
 			# etwas show
@@ -523,16 +524,16 @@ class IOPorts():
 			sleep(0.1)
 			g.output(11,0)
 			sleep(0.1)
-			
-			
+
+
 			#jabber.newSession()
 			# spacestatus open
 			call(['curl','-d status=open', "https://hackerspace-bielefeld.de/spacestatus/spacestatus.php"])
 
-			
+
 			# port 11 on
 			g.output(11,1)
-			
+
 			sleep(5)
 			# in chat schreiben, dass space offen
 			jabber.sendTo("[STATUS] Der Space ist nun geöffnet.")
@@ -571,7 +572,7 @@ font = "Arial"
 chat = Text(f,bg="#000000",fg="#ffffff",font=(font,32),bd=2,height=19,width=29)
 clock = Label(f,textvariable=ts,fg="#ffffff", bg="#000000", bd=2,font=("CyberFunk",135),width=5)
 infoh = Label(f,textvariable=ti,fg="#ffffff", bg="#000000",font=("fraulein hex",51))
-infot = Text(f,bg="#000000",fg="#ffffff",font=(font,24),bd=2,height=18,width=22)	
+infot = Text(f,bg="#000000",fg="#ffffff",font=(font,24),bd=2,height=18,width=22)
 toast = Label(f,textvariable=to,fg="#ffffff", bg="#000000", bd=2,font=(font,108),width=8)
 status = Label(f,textvariable=st,fg="#ffffff", bg="#000000", bd=2,font=(font,32))
 
@@ -613,7 +614,7 @@ def getClock():
 
 # cycelt infos durch
 def getInfo():
-	global infot 
+	global infot
 	global infoh
 	while True:
 		infos = {}
@@ -623,7 +624,7 @@ def getInfo():
 				with open (c.INFPATH+"/"+i, "r") as myfile:
 					data="".join(myfile.readlines())
 					infos[i[:-4]] = data
-			
+
 		for j in infos:
 			infot.delete("1.0",END)
 			infot.insert(END, infos[j])
@@ -631,7 +632,7 @@ def getInfo():
 			ti.set(j)
 			infot.update()
 			sleep(30)
-			
+
 def getGWP():
 	global st
 	while True:
@@ -644,8 +645,8 @@ def getGWP():
 		sleep(60)
 		#debugMsg("[SETSTATUS]")
 
-	
-#sendet nachricht an display	
+
+#sendet nachricht an display
 def sendMsg(msg,colstr=False,tag="nothing"):
 	global chat
 	try:
@@ -661,13 +662,13 @@ def sendMsg(msg,colstr=False,tag="nothing"):
 		f.update_idletasks()
 	except:
 		pass
-	
+
 io = IOPorts()
-	
+
 thread(getClock,())
 thread(getInfo,())
 thread(getGWP,())
-print("preMQTT")
+
 mqtt = MQTT()
 jabber = Jabber()
 thread(jabber.run,())
