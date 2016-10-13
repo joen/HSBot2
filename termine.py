@@ -17,26 +17,42 @@ def wordpress():
 	http = urllib3.PoolManager()
 	#r = http.request('GET', 'https://blog.hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&xml=true')
 	#r = http.request('GET', 'https://hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&ai1ec_post_ids=1188&xml=true')
-	r = http.request('GET', 'https://hackerspace-bielefeld.de/?plugin=all-in-one-event-calendar&controller=ai1ec_exporter_controller&action=export_events&xml=true')
+	r = http.request('GET', 'https://hackerspace-bielefeld.de/calendar/action~agenda/request_format~html/')
 	if r.status == 200:
 		#data = json.loads(r.data)
 		data = r.data.split("\n")
+		#print(data)
 		n = len(data)
 		i = 0
+		
 		while i<n:
-			if data[i].startswith("<vevent>"):
-				i=i+2
-				while not data[i].startswith("<dtstart"):
+			data[i] = data[i].strip()
+			i=i+1
+		i = 0
+
+		while i<n:
+			#print(data[i])
+			if data[i].startswith('<div class="ai1ec-date') :
+				q = i
+				while not data[i].startswith('<a'):
 					i=i+1
-				s = data[i].find(">")
-				datum = [int(data[i][s+1:s+5]),int(data[i][s+5:s+7]),int(data[i][s+7:s+9]),""]
-				
-				while not data[i].startswith("<summary>"):
+
+				s = data[i].find('date&#x7E;')+10
+				tmp = data[i][s:]
+				s = tmp.find('&')
+				tmp = tmp[:s]
+				tmp2 = tmp.split('.')
+				datum = [int(tmp2[2]),int(tmp2[0]),int(tmp2[1]),""]
+
+				while not data[i].startswith('<span class="ai1ec-event-title">'):
 					i=i+1
-				datum[3] = data[i][9:-11]
-				#print(datum)
+				i=i+1
+				datum[3] = data[i]
+				print(datum)
 				ret.append(datum)
 			i=i+1
+			if data[i].startswith('<div class="ai1ec-pull-left">'):
+				break
 			
 
 		print(ret)
