@@ -271,7 +271,8 @@ def debugMsg(msg,fkt='DEBUG-BOT'):
 #mosquito Klasse
 class MQTT():
 	client = mossub.Client()
-	
+
+	print("MQTT start")	
 	def __init__(self):
 		self.client = mossub.Client()
 		self.client.on_connect = self.on_connect
@@ -280,6 +281,7 @@ class MQTT():
 	def run(self):
 		self.client.connect(c.MQTTSRV, 1883, 60)
 		while True:
+			print("MQTT loop")
 			self.client.loop_forever()
 
 	def on_connect(self,client, userdata, flags, rc):
@@ -290,18 +292,20 @@ class MQTT():
 
 	def on_message(self,client, userdata, msg):
 		debugMsg("MQTT Msg: "+msg.topic+" "+str(msg.payload))
-		if(msg.topic == 'toast'):
+		if(msg.topic == c.MQTTTOPT):
 			makeToast(msg.payload,10)
 			
 		if msg.topic == 'test' and msg.payload == 'blue':
 			thread(makeFullImg,('/media/bluescreen.png',10))
+			print("trigger Blue")
 		
 		if msg.topic == 'test' and msg.payload == 'red':
 			thread(makeFullAni,('/media/test.gif',0.04))
-		
-		if(msg.topic == 'chat'):
+			print("trigger Red")
+
+		if(msg.topic == c.MQTTTOPI):
 			sendMsg("[MQTT]: "+str(msg.payload))
-	
+
 	def incMsg(msg,nick=''):
 		pass
 
@@ -663,7 +667,7 @@ io = IOPorts()
 thread(getClock,())
 thread(getInfo,())
 thread(getGWP,())
-
+print("preMQTT")
 mqtt = MQTT()
 jabber = Jabber()
 thread(jabber.run,())
